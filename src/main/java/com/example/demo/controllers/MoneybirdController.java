@@ -12,11 +12,12 @@ import org.springframework.web.client.RestTemplate;
 public class MoneybirdController {
     @Value("${MBBearerToken}")
     private String token;
-    @Value("${administrationId}")
-    private String adminId;
+    @Value("${MBApiLinkBeginning}")
+    private String MBLinkBeginning;
 
     @GetMapping
-    public ResponseEntity getInvoices() {
+    public ResponseEntity getAllInvoices() {
+        // RestTemplate is deprecated, it's better to use WebClient
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -25,14 +26,12 @@ public class MoneybirdController {
 
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
         ResponseEntity<?> result =
-                restTemplate.exchange("https://moneybird.com/api/v2/"
-                                + adminId
+                restTemplate.exchange(MBLinkBeginning
                                 + "/sales_invoices.json",
                         HttpMethod.GET,
                         entity,
                         String.class);
 
-        //return result.getBody();
         return result;
     }
 }
