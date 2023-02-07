@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
 @RequestMapping("/moneybird")
@@ -16,22 +17,17 @@ public class MoneybirdController {
     private String MBLinkBeginning;
 
     @GetMapping
-    public ResponseEntity getAllInvoices() {
-        // RestTemplate is deprecated, it's better to use WebClient
-        RestTemplate restTemplate = new RestTemplate();
+    public String getAllInvoices() {
+        String response = WebClient.create(MBLinkBeginning
+                        + "/sales_invoices.json")
+                .get()
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
-        headers.add("Authorization", "Bearer " + token);
-
-        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-        ResponseEntity<?> result =
-                restTemplate.exchange(MBLinkBeginning
-                                + "/sales_invoices.json",
-                        HttpMethod.GET,
-                        entity,
-                        String.class);
-
-        return result;
+        return response;
     }
 }
