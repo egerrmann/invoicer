@@ -4,13 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 @Getter
 @Setter
 @ToString
 public class SalesInvoice {
-    private int salesId;
+    private BigInteger contactId;
     private int contactPersonId;
     private int originalEstimateId;
     private int documentStyleId;
@@ -25,11 +26,13 @@ public class SalesInvoice {
     private double discount;
     // ???
     private boolean fromCheckpoint;
+    private DetailsAttributes detailsAttributes = new DetailsAttributes();
+    private CustomFieldsAttributes customFieldsAttributes = new CustomFieldsAttributes();
 
     @Getter
     @Setter
     @ToString
-    class DetailsAttributes {
+    public class DetailsAttributes {
         private int id;
         private String description;
         private String period;
