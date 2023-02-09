@@ -1,59 +1,65 @@
 package com.example.demo.models;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @ToString
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
     private BigInteger contactId;
-    private int contactPersonId;
-    private int originalEstimateId;
-    private int documentStyleId;
-    private int workflowId;
+    private Integer contactPersonId;
+    private Integer originalEstimateId;
+    private Integer documentStyleId;
+    private Integer workflowId;
     private String reference;
     private String invoiceSequenceId;
     private String invoiceDate;
-    private int firstDueInterval;
+    private Integer firstDueInterval;
     private String currency;
-    private boolean piecesAreInclTax;
+    private Boolean piecesAreInclTax;
     private String paymentConditions;
-    private double discount;
+    private Double discount;
     // ???
-    private boolean fromCheckpoint;
-    private DetailsAttributes detailsAttributes = new DetailsAttributes();
-    private CustomFieldsAttributes customFieldsAttributes = new CustomFieldsAttributes();
+    private Boolean fromCheckpoint;
+    private List<DetailsAttributes> detailsAttributes = new ArrayList<>();
+    private List<CustomFieldsAttributes> customFieldsAttributes = new ArrayList<>();
 
     @Getter
     @Setter
     @ToString
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public class DetailsAttributes {
-        private int id;
+        private Integer id;
         private String description;
         private String period;
-        private double price;
+        private Double price;
         private String amount;
-        private int taxRateId;
-        private int ledgerAccountId;
-        private int projectId;
-        private int productId;
+        private Integer taxRateId;
+        private Integer ledgerAccountId;
+        private Integer projectId;
+        private Integer productId;
         // type?
-        private ArrayList timeEntryIds;
-        private int rowOrder;
-        private boolean destroy;
-        private boolean automatedTaxEnabled;
+        private List timeEntryIds = new ArrayList();
+        private Integer rowOrder;
+        private Boolean destroy;
+        private Boolean automatedTaxEnabled;
     }
 
     @Getter
     @Setter
     @ToString
-    class CustomFieldsAttributes {
-        private int id;
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public class CustomFieldsAttributes {
+        private Integer id;
         private String value;
     }
 }
