@@ -45,12 +45,6 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public MoneybirdService.SalesInvoiceWrapper getWrappedInvoice(SalesInvoice invoice) {
-        wrappedInvoice.setSalesInvoice(invoice);
-        return wrappedInvoice;
-    }
-
-    @Override
     public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
         return webClientWithBaseUrl.get()
                 .uri("/sales_invoices.json")
@@ -60,7 +54,7 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public ResponseEntity<SalesInvoice> createNewInvoice(MoneybirdService.SalesInvoiceWrapper invoice) {
+    public ResponseEntity<SalesInvoice> createNewInvoice(SalesInvoice invoice) {
         // For some reason code from below doesn't work. Apparently, there's
         // a problem with the headers when getting a response from Moneybird
         /*return webClientWithBaseUrl.post()
@@ -69,10 +63,11 @@ public class MoneybirdService implements IMoneybirdService {
                 .retrieve()
                 .toEntity(SalesInvoice.class)
                 .block();*/
+        wrappedInvoice.setSalesInvoice(invoice);
 
         ResponseEntity<SalesInvoice> responseEntity = webClientWithBaseUrl.post()
                 .uri("/sales_invoices.json")
-                .body(BodyInserters.fromValue(invoice))
+                .body(BodyInserters.fromValue(wrappedInvoice))
                 .retrieve()
                 .toEntity(SalesInvoice.class)
                 .block();
@@ -85,7 +80,6 @@ public class MoneybirdService implements IMoneybirdService {
     @Getter
     @Setter
     @NoArgsConstructor
-    @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SalesInvoiceWrapper {
         SalesInvoice salesInvoice;

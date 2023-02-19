@@ -22,9 +22,7 @@ public class MoneybirdController {
     @PostMapping
     public ResponseEntity<SalesInvoice> createInvoice() {
         SalesInvoice testInvoice = service.getTestInvoice();
-        MoneybirdService.SalesInvoiceWrapper wrappedInvoice =
-                service.getWrappedInvoice(testInvoice);
-        return service.createNewInvoice(wrappedInvoice);
+        return service.createNewInvoice(testInvoice);
     }
 
     @Autowired
