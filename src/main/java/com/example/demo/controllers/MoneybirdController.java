@@ -13,7 +13,6 @@ import java.util.List;
 @RequestMapping("/moneybird")
 public class MoneybirdController {
     private IMoneybirdService service;
-    private MoneybirdService.SalesInvoiceWrapper wrapper;
 
     @GetMapping
     public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
@@ -22,9 +21,10 @@ public class MoneybirdController {
 
     @PostMapping
     public ResponseEntity<SalesInvoice> createInvoice() {
-        SalesInvoice invoice = service.getTestInvoice();
-        wrapper.setSalesInvoice(invoice);
-        return service.createNewInvoice(wrapper);
+        SalesInvoice testInvoice = service.getTestInvoice();
+        MoneybirdService.SalesInvoiceWrapper wrappedInvoice =
+                service.getWrappedInvoice(testInvoice);
+        return service.createNewInvoice(wrappedInvoice);
     }
 
     @Autowired
@@ -32,8 +32,4 @@ public class MoneybirdController {
         this.service = service;
     }
 
-    @Autowired
-    private void setWrapper(MoneybirdService.SalesInvoiceWrapper wrapper) {
-        this.wrapper = wrapper;
-    }
 }

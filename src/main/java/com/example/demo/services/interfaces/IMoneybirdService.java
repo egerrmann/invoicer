@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface IMoneybirdService {
     SalesInvoice getTestInvoice();
+    MoneybirdService.SalesInvoiceWrapper getWrappedInvoice(SalesInvoice invoice);
     ResponseEntity<List<SalesInvoice>> getAllInvoices();
     ResponseEntity<SalesInvoice> createNewInvoice(MoneybirdService.SalesInvoiceWrapper invoice);
 }

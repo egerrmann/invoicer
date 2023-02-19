@@ -4,9 +4,11 @@ import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +24,7 @@ import java.util.List;
 @Service
 public class MoneybirdService implements IMoneybirdService {
     private WebClient webClientWithBaseUrl;
+    private SalesInvoiceWrapper wrappedInvoice;
     @Value("${MBBearerToken}")
     private String token;
 
@@ -42,6 +45,12 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
+    public MoneybirdService.SalesInvoiceWrapper getWrappedInvoice(SalesInvoice invoice) {
+        wrappedInvoice.setSalesInvoice(invoice);
+        return wrappedInvoice;
+    }
+
+    @Override
     public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
         return webClientWithBaseUrl.get()
                 .uri("/sales_invoices.json")
@@ -52,8 +61,8 @@ public class MoneybirdService implements IMoneybirdService {
 
     @Override
     public ResponseEntity<SalesInvoice> createNewInvoice(MoneybirdService.SalesInvoiceWrapper invoice) {
-        //for some reason code from below doesn't work. Apparently,
-        //there's a problem with the headers when getting a response from MB
+        // For some reason code from below doesn't work. Apparently, there's
+        // a problem with the headers when getting a response from Moneybird
         /*return webClientWithBaseUrl.post()
                 .uri("/sales_invoices.json")
                 .body(BodyInserters.fromValue(invoice))
@@ -76,6 +85,7 @@ public class MoneybirdService implements IMoneybirdService {
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SalesInvoiceWrapper {
         SalesInvoice salesInvoice;
@@ -88,5 +98,10 @@ public class MoneybirdService implements IMoneybirdService {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
+    }
+
+    @Autowired
+    private void setWrappedInvoice(SalesInvoiceWrapper wrappedInvoice) {
+        this.wrappedInvoice = wrappedInvoice;
     }
 }
