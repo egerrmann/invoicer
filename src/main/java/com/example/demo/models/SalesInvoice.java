@@ -1,8 +1,10 @@
 package com.example.demo.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -13,13 +15,14 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
     private BigInteger contactId;
     private Integer contactPersonId;
     private Integer originalEstimateId;
-    private Integer documentStyleId;
-    private Integer workflowId;
+    private BigInteger documentStyleId;
+    private BigInteger workflowId;
     private String reference;
     private String invoiceSequenceId;
     private String invoiceDate;
@@ -28,23 +31,46 @@ public class SalesInvoice {
     private Boolean piecesAreInclTax;
     private String paymentConditions;
     private Double discount;
-    // ???
-    private Boolean fromCheckpoint;
+    // ??? (maybe we should delete this field)
+    private Boolean fromCheckout;
+
     private List<DetailsAttributes> detailsAttributes = new ArrayList<>();
+
+    @JsonProperty("details_attributes")
+    public List<DetailsAttributes> getDetailsAttributes() {
+        return detailsAttributes;
+    }
+
+    @JsonProperty("details")
+    public void setDetailsAttributes(List<DetailsAttributes> detailsAttributes) {
+        this.detailsAttributes = detailsAttributes;
+    }
+
     private List<CustomFieldsAttributes> customFieldsAttributes = new ArrayList<>();
+
+    @JsonProperty("custom_fields_attributes")
+    public List<CustomFieldsAttributes> getCustomFieldsAttributes() {
+        return customFieldsAttributes;
+    }
+
+    @JsonProperty("custom_fields")
+    public void setCustomFieldsAttributes(List<CustomFieldsAttributes> customFieldsAttributes) {
+        this.customFieldsAttributes = customFieldsAttributes;
+    }
 
     @Getter
     @Setter
     @ToString
+    @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public class DetailsAttributes {
-        private Integer id;
+    public static class DetailsAttributes {
+        private BigInteger id;
         private String description;
         private String period;
         private Double price;
         private String amount;
-        private Integer taxRateId;
-        private Integer ledgerAccountId;
+        private BigInteger taxRateId;
+        private BigInteger ledgerAccountId;
         private Integer projectId;
         private Integer productId;
         // type?
@@ -57,9 +83,10 @@ public class SalesInvoice {
     @Getter
     @Setter
     @ToString
+    @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public class CustomFieldsAttributes {
-        private Integer id;
+    public static class CustomFieldsAttributes {
+        private BigInteger id;
         private String value;
     }
 }

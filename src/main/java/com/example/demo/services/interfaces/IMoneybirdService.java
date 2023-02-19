@@ -1,14 +1,13 @@
 package com.example.demo.services.interfaces;
 
 import com.example.demo.models.SalesInvoice;
-import org.springframework.http.HttpMethod;
+import com.example.demo.services.MoneybirdService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.reactive.function.BodyInserter;
-import org.springframework.web.reactive.function.BodyInserters;
+
+import java.util.List;
 
 public interface IMoneybirdService {
-    String getJsonFromInvoice(SalesInvoice invoice);
     SalesInvoice getTestInvoice();
-    ResponseEntity<String> getResponseFromMB(HttpMethod methodType,
-                                             String jsonInvoice);
+    ResponseEntity<List<SalesInvoice>> getAllInvoices();
+    ResponseEntity<SalesInvoice> createNewInvoice(MoneybirdService.SalesInvoiceWrapper invoice);
 }

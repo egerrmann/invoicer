@@ -2,40 +2,28 @@ package com.example.demo.services;
 
 import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigInteger;
+import java.util.List;
 
 @Service
 public class MoneybirdService implements IMoneybirdService {
     private WebClient webClientWithBaseUrl;
     @Value("${MBBearerToken}")
     private String token;
-
-    @Override
-    public String getJsonFromInvoice(SalesInvoice invoice) {
-        ObjectWriter objectWriter = new ObjectMapper()
-                .writer()
-                .withDefaultPrettyPrinter();
-
-        String jsonInvoice = "{\"sales_invoice\":";
-        try {
-            jsonInvoice += objectWriter.writeValueAsString(invoice);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        jsonInvoice += "}";
-
-        return jsonInvoice;
-    }
 
     @Override
     public SalesInvoice getTestInvoice() {
@@ -45,7 +33,7 @@ public class MoneybirdService implements IMoneybirdService {
         //invoice.setDiscount(15.5);
 
         SalesInvoice.DetailsAttributes detailsAttributes =
-                invoice.new DetailsAttributes();
+                new SalesInvoice.DetailsAttributes();
         detailsAttributes.setDescription("My own chair");
         detailsAttributes.setPrice(129.95);
         invoice.getDetailsAttributes().add(detailsAttributes);
@@ -54,25 +42,51 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public ResponseEntity<String> getResponseFromMB(HttpMethod methodType,
-                                                    String jsonInvoice) {
-        return getWebClientWithBaseUrl()
-                .method(methodType)
+    public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
+        return webClientWithBaseUrl.get()
                 .uri("/sales_invoices.json")
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + token)
-                .body(BodyInserters.fromValue(jsonInvoice))
                 .retrieve()
-                .toEntity(String.class)
+                .toEntityList(SalesInvoice.class)
                 .block();
     }
 
-    public WebClient getWebClientWithBaseUrl() {
-        return webClientWithBaseUrl;
+    @Override
+    public ResponseEntity<SalesInvoice> createNewInvoice(MoneybirdService.SalesInvoiceWrapper invoice) {
+        //for some reason code from below doesn't work. Apparently,
+        //there's a problem with the headers when getting a response from MB
+        /*return webClientWithBaseUrl.post()
+                .uri("/sales_invoices.json")
+                .body(BodyInserters.fromValue(invoice))
+                .retrieve()
+                .toEntity(SalesInvoice.class)
+                .block();*/
+
+        ResponseEntity<SalesInvoice> responseEntity = webClientWithBaseUrl.post()
+                .uri("/sales_invoices.json")
+                .body(BodyInserters.fromValue(invoice))
+                .retrieve()
+                .toEntity(SalesInvoice.class)
+                .block();
+
+        return new ResponseEntity<>(responseEntity.getBody(),
+                responseEntity.getStatusCode());
+    }
+
+    @Component
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class SalesInvoiceWrapper {
+        SalesInvoice salesInvoice;
     }
 
     @Value("${mbApiBaseUrl}")
     private void setWebClientWithBaseUrl(String baseUrl) {
-        webClientWithBaseUrl = WebClient.create(baseUrl);
+        webClientWithBaseUrl = WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build();
     }
 }
