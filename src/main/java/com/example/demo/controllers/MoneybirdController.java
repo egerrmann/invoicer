@@ -1,89 +1,33 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.SalesInvoice;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.demo.services.MoneybirdService;
+import com.example.demo.services.interfaces.IMoneybirdService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
+import java.util.List;
 
 @RestController
 @RequestMapping("/moneybird")
 public class MoneybirdController {
-    @Value("${MBBearerToken}")
-    private String token;
-    @Value("${mbApiBaseUrl}")
-    private String mbApiBaseUrl;
+    private IMoneybirdService service;
 
     @GetMapping
-    public String getAllInvoices() {
-        String response = WebClient.create(mbApiBaseUrl
-                        + "/sales_invoices.json")
-                .get()
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + token)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        return response;
+    public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
+        return service.getAllInvoices();
     }
 
     @PostMapping
-    public String createInvoice() {
-        SalesInvoice invoice = getTestInvoice();
-
-        String jsonInvoice = getJsonFromInvoice(invoice);
-
-        String createdInvoice = WebClient.create(mbApiBaseUrl
-                + "/sales_invoices.json")
-                .post()
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + token)
-                .body(BodyInserters.fromValue(jsonInvoice))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        return createdInvoice;
+    public ResponseEntity<SalesInvoice> createInvoice() {
+        SalesInvoice testInvoice = service.getTestInvoice();
+        return service.createNewInvoice(testInvoice);
     }
 
-    private String getJsonFromInvoice(SalesInvoice invoice) {
-        ObjectWriter objectWriter = new ObjectMapper()
-                .writer()
-                .withDefaultPrettyPrinter();
-
-        String jsonInvoice = "{\"sales_invoice\":";
-        try {
-            jsonInvoice += objectWriter.writeValueAsString(invoice);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        jsonInvoice += "}";
-
-        return jsonInvoice;
+    @Autowired
+    private void setService(IMoneybirdService service) {
+        this.service = service;
     }
 
-    private SalesInvoice getTestInvoice() {
-        SalesInvoice invoice = new SalesInvoice();
-        invoice.setReference("30052");
-        invoice.setContactId(new BigInteger("378315484942042971"));
-        //invoice.setDiscount(15.5);
-
-        SalesInvoice.DetailsAttributes detailsAttributes =
-                invoice.new DetailsAttributes();
-        detailsAttributes.setDescription("My own chair");
-        detailsAttributes.setPrice(129.95);
-        invoice.getDetailsAttributes().add(detailsAttributes);
-
-        return invoice;
-    }
 }
