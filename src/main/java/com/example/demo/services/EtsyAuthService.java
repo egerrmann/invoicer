@@ -1,21 +1,24 @@
 package com.example.demo.services;
 
 import com.example.demo.models.EtsyAuthCredentials;
-import com.example.demo.models.EtsyOAuth;
 import com.example.demo.models.OAuthChallenge;
 import com.example.demo.services.interfaces.IEtsyAuthService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Sha2Crypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 @Service
 public class EtsyAuthService implements IEtsyAuthService {
 
+    @Value("${etsyClientId}")
+    private String clientId;
+    @Value("${callbackURL}")
+    private String redirectUri;
     private WebClient client;
 
     @Override
@@ -26,6 +29,8 @@ public class EtsyAuthService implements IEtsyAuthService {
 
         EtsyAuthCredentials credentials = new EtsyAuthCredentials();
         credentials.setCodeChallenge(challengeData.getChallengeBase64String());
+        credentials.setClientId(clientId);
+        credentials.setRedirectUri(redirectUri);
 
         HttpHeaders allHeaders = new HttpHeaders();
         allHeaders.add("response_type", credentials.getResponseType());
@@ -36,20 +41,34 @@ public class EtsyAuthService implements IEtsyAuthService {
         allHeaders.add("code_challenge_method", credentials.getCodeChallengeMethod());
         allHeaders.add("client_id", credentials.getClientId());
 
-//        EtsyOAuth data;
+//        CallbackData data;
         String data;
+
+        System.out.println("https://www.etsy.com/oauth/connect?" +
+                "response_type=" + credentials.getResponseType() +
+                "&redirect_uri=" + credentials.getRedirectUri() +
+                "&scope=" + credentials.getScope() +
+                "&client_id=" + credentials.getClientId() +
+                "&state=" + credentials.getState() +
+                "&code_challenge=" + credentials.getCodeChallenge() +
+                "&code_challenge_method=" + credentials.getCodeChallengeMethod());
 
         try {
             data = client.get()
-                    .uri("https://www.etsy.com/oauth/connect")
-                    .headers(headers23 -> {
-                        headers23.addAll(allHeaders);
-                    })
+                    .uri("https://www.etsy.com/oauth/connect?" +
+                            "response_type=" + credentials.getResponseType() +
+                            "&redirect_uri=" + credentials.getRedirectUri() +
+                            "&scope=" + credentials.getScope() +
+                            "&client_id=" + credentials.getClientId() +
+                            "&state=" + credentials.getState() +
+                            "&code_challenge=" + credentials.getCodeChallenge() +
+                            "&code_challenge_method=" + credentials.getCodeChallengeMethod())
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
         } catch (Error err) {
-            throw new Error(err.getMessage());
+            data = err.getMessage();
+//            throw new Error(err.getMessage());
         }
 
         return data;

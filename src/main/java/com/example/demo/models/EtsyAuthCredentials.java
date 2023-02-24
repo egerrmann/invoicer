@@ -10,9 +10,13 @@ import org.springframework.beans.factory.annotation.Value;
 @NoArgsConstructor
 public class EtsyAuthCredentials {
     private String responseType = "code";
-    @Value("${etsyClientId}")
+
+//    @Value("${etsyClientId}")
     private String clientId;
-    private String redirectUri = "https://oauth.pstmn.io/v1/callback";
+
+//    @Value("${callbackURL}")
+    private String redirectUri;
+
     private String scope = "billing_r";
     private String state = "superstate";
     private String codeChallenge = "";
