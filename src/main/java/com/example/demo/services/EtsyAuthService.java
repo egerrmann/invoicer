@@ -6,9 +6,12 @@ import com.example.demo.services.interfaces.IEtsyAuthService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Sha2Crypt;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -42,7 +45,7 @@ public class EtsyAuthService implements IEtsyAuthService {
         allHeaders.add("client_id", credentials.getClientId());
 
 //        CallbackData data;
-        String data;
+        String data = "";
 
         System.out.println("https://www.etsy.com/oauth/connect?" +
                 "response_type=" + credentials.getResponseType() +
@@ -53,23 +56,26 @@ public class EtsyAuthService implements IEtsyAuthService {
                 "&code_challenge=" + credentials.getCodeChallenge() +
                 "&code_challenge_method=" + credentials.getCodeChallengeMethod());
 
-        try {
-            data = client.get()
-                    .uri("https://www.etsy.com/oauth/connect?" +
-                            "response_type=" + credentials.getResponseType() +
-                            "&redirect_uri=" + credentials.getRedirectUri() +
-                            "&scope=" + credentials.getScope() +
-                            "&client_id=" + credentials.getClientId() +
-                            "&state=" + credentials.getState() +
-                            "&code_challenge=" + credentials.getCodeChallenge() +
-                            "&code_challenge_method=" + credentials.getCodeChallengeMethod())
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-        } catch (Error err) {
-            data = err.getMessage();
-//            throw new Error(err.getMessage());
-        }
+        Mono<ResponseEntity<String>> response = client.get()
+                .uri("https://www.etsy.com/oauth/connect?" +
+                        "response_type=" + credentials.getResponseType() +
+                        "&redirect_uri=" + credentials.getRedirectUri() +
+                        "&scope=" + credentials.getScope() +
+                        "&client_id=" + credentials.getClientId() +
+                        "&state=" + credentials.getState() +
+                        "&code_challenge=" + credentials.getCodeChallenge() +
+                        "&code_challenge_method=" + credentials.getCodeChallengeMethod())
+                .retrieve()
+                .toEntity(String.class);
+
+        response.subscribe(
+                entity -> {
+                    System.out.println("\nResponse status: " + entity.getStatusCode() + "\n");
+                    System.out.println("\nResponse body: " + entity.getBody() + "\n");
+                },
+                error -> {
+                    System.out.println("\nError: " + error.getMessage());                }
+        );
 
         return data;
     }
