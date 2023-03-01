@@ -7,5 +7,5 @@ import reactor.core.publisher.Mono;
 public interface IMoneybirdInvoiceService {
     SalesInvoice getTestInvoice();
     Flux<SalesInvoice> getAllInvoices();
-    Mono<SalesInvoice> createNewInvoice(SalesInvoice invoice);
+    Mono<SalesInvoice> createInvoice(SalesInvoice invoice);
 }

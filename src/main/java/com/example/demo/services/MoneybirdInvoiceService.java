@@ -54,7 +54,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     }
 
     @Override
-    public Mono<SalesInvoice> createNewInvoice(SalesInvoice invoice) {
+    public Mono<SalesInvoice> createInvoice(SalesInvoice invoice) {
         wrappedInvoice.setSalesInvoice(invoice);
 
         return webClientWithBaseUrl.post()
