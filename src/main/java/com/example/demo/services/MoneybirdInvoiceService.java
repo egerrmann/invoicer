@@ -1,6 +1,5 @@
 package com.example.demo.services;
 
-import com.example.demo.models.MoneybirdContact;
 import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -24,7 +23,6 @@ import java.math.BigInteger;
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
-    private ContactWrapper wrappedContact;
     @Value("${MBBearerToken}")
     private String token;
 
@@ -42,15 +40,6 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
         invoice.getDetailsAttributes().add(detailsAttributes);
 
         return invoice;
-    }
-
-    @Override
-    public MoneybirdContact getTestContact() {
-        MoneybirdContact contact = new MoneybirdContact();
-        contact.setCompanyName("Test company name");
-        contact.setAddress1("NL, Test st, apt. 67");
-        contact.setPhone("+375291234567");
-        return contact;
     }
 
     @Override
@@ -78,32 +67,6 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                 });
     }
 
-    @Override
-    public Flux<MoneybirdContact> getAllContacts() {
-        return webClientWithBaseUrl.get()
-                .uri("/contacts.json")
-                .exchangeToFlux(response -> {
-                    if (response.statusCode().equals(HttpStatus.OK))
-                        return response.bodyToFlux(MoneybirdContact.class);
-                    else return response.createError().flux().cast(MoneybirdContact.class);
-                });
-    }
-
-    @Override
-    public Mono<MoneybirdContact> createNewContact(MoneybirdContact contact) {
-        wrappedContact.setContact(contact);
-
-        return webClientWithBaseUrl.post()
-                .uri("/contacts.json")
-                .body(BodyInserters.fromValue(wrappedContact))
-                .exchangeToMono(response -> {
-                    if (response.statusCode() == HttpStatus.CREATED) {
-                        return response.bodyToMono(MoneybirdContact.class);
-                    }
-                    else return response.createError();
-                });
-    }
-
     @Component
     @Getter
     @Setter
@@ -111,15 +74,6 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SalesInvoiceWrapper {
         SalesInvoice salesInvoice;
-    }
-
-    @Component
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class ContactWrapper {
-        MoneybirdContact contact;
     }
 
     @Value("${mbApiBaseUrl}")
@@ -134,10 +88,5 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @Autowired
     private void setWrappedInvoice(SalesInvoiceWrapper wrappedInvoice) {
         this.wrappedInvoice = wrappedInvoice;
-    }
-
-    @Autowired
-    private void setWrappedContact(ContactWrapper wrappedContact) {
-        this.wrappedContact = wrappedContact;
     }
 }

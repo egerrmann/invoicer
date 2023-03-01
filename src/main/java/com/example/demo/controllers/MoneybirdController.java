@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.MoneybirdContact;
 import com.example.demo.models.SalesInvoice;
+import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -14,86 +15,94 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/moneybird")
 public class MoneybirdController {
-    private IMoneybirdInvoiceService service;
+    private IMoneybirdInvoiceService invoiceService;
+    private IMoneybirdContactService contactService;
 
     @GetMapping("/invoices")
     public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(service.getAllInvoices());
+                .body(invoiceService.getAllInvoices());
     }
 
     @PostMapping("/invoices")
     public ResponseEntity<Mono<SalesInvoice>> createInvoice(
-            @RequestBody SalesInvoice invoice) {
+            /*@RequestBody SalesInvoice invoice*/) {
 
-        SalesInvoice testInvoice = service.getTestInvoice();
+        SalesInvoice testInvoice = invoiceService.getTestInvoice();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.createNewInvoice(testInvoice));
+                .body(invoiceService.createNewInvoice(testInvoice));
     }
 
     @GetMapping("/contacts")
     public ResponseEntity<Flux<MoneybirdContact>> getAllContacts() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(service.getAllContacts());
+                .body(contactService.getAllContacts());
     }
 
-    @PostMapping("/contacts")
     public ResponseEntity<Mono<MoneybirdContact>> createContact(
             /*@RequestBody MoneybirdContact contact*/) {
 
-        MoneybirdContact testContact = service.getTestContact();
+        MoneybirdContact testContact = contactService.getTestContact();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.createNewContact(testContact));
+                .body(contactService.createNewContact(testContact));
     }
 
+    // TODO: substitute the testContact variable with a contact method argument
+    // TODO: return an id of a created/existing contact
     @PostMapping("/contacts/create")
     public ResponseEntity<Mono<MoneybirdContact>> createContactIfDoesntExist(
             /*@RequestBody MoneybirdContact contact*/) {
 
-        MoneybirdContact testContact = service.getTestContact();
+        MoneybirdContact testContact = contactService.getTestContact();
         Optional<String> testContactFullName = testContact.getOptionalFullName();
         Optional<String> testContactCompanyName = testContact.getOptionalCompanyName();
 
-        Iterable<MoneybirdContact> contacts = service.getAllContacts().toIterable();
+        Iterable<MoneybirdContact> addedContacts =
+                contactService.getAllContacts().toIterable();
         ResponseEntity<Mono<MoneybirdContact>> result = null;
 
-        for (MoneybirdContact addedContact : contacts) {
+        for (MoneybirdContact addedContact : addedContacts) {
             Optional<String> addedContactFullName =
                     addedContact.getOptionalFullName();
             Optional<String> addedContactCompanyName =
                     addedContact.getOptionalCompanyName();
 
-            if (testContactFullName.isPresent()
+            boolean areFullNamesEqual = testContactFullName.isPresent()
                     && addedContactFullName.isPresent()
-                    && addedContactFullName.get().equals(testContactFullName.get())) {
-                result = createContact();
-                break;
-            } else if (testContactCompanyName.isPresent()
+                    && addedContactFullName.get().equals(testContactFullName.get());
+            boolean areCompanyNamesEqual = testContactCompanyName.isPresent()
                     && addedContactCompanyName.isPresent()
-                    && testContactCompanyName.get().equals(addedContactCompanyName.get())) {
-                result = createContact();
+                    && testContactCompanyName.get().equals(addedContactCompanyName.get());
+
+            if (areFullNamesEqual || areCompanyNamesEqual) {
                 break;
             }
         }
 
+        // TODO: change response body if contact exists
         if (result == null)
             return createContact();
         else
-            return ResponseEntity.status(HttpStatusCode.valueOf(405))
+            return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Mono.empty().ofType(MoneybirdContact.class));
     }
 
     /*@PostMapping
     public ResponseEntity<Mono<SalesInvoice>> createInvoiceForContact(
-            @RequestBody MoneybirdService.InvoiceAndContact invoiceAndContact) {
+            @RequestBody MoneybirdInvoiceRequest) {
 
         SalesInvoice testInvoice = service.getTestInvoice();
         MoneybirdContact testContact = service.getTestContact();
     }*/
 
     @Autowired
-    private void setService(IMoneybirdInvoiceService service) {
-        this.service = service;
+    private void setInvoiceService(IMoneybirdInvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+    }
+
+    @Autowired
+    public void setContactService(IMoneybirdContactService contactService) {
+        this.contactService = contactService;
     }
 
 }
