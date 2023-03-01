@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigInteger;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -46,4 +47,18 @@ public class MoneybirdContact {
     private Boolean emailUbl;
     private Boolean directDebit;
     // some fields are not added
+
+    public String getFullName() {
+        if (firstname == null || lastname == null)
+            return null;
+        return firstname + lastname;
+    }
+
+    public Optional<String> getOptionalFullName() {
+        return Optional.ofNullable(getFullName());
+    }
+
+    public Optional<String> getOptionalCompanyName() {
+        return Optional.ofNullable(companyName);
+    }
 }

@@ -2,7 +2,7 @@ package com.example.demo.services;
 
 import com.example.demo.models.MoneybirdContact;
 import com.example.demo.models.SalesInvoice;
-import com.example.demo.services.interfaces.IMoneybirdService;
+import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
@@ -15,16 +15,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
-import java.util.List;
 
 @Service
-public class MoneybirdService implements IMoneybirdService {
+public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
-    private MoneybirdContactWrapper wrappedContact;
+    private ContactWrapper wrappedContact;
     @Value("${MBBearerToken}")
     private String token;
 
@@ -54,12 +54,14 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
+    public Flux<SalesInvoice> getAllInvoices() {
         return webClientWithBaseUrl.get()
                 .uri("/sales_invoices.json")
-                .retrieve()
-                .toEntityList(SalesInvoice.class)
-                .block();
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToFlux(SalesInvoice.class);
+                    else return response.createError().flux().cast(SalesInvoice.class);
+                });
     }
 
     @Override
@@ -77,12 +79,14 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public ResponseEntity<List<MoneybirdContact>> getAllContacts() {
+    public Flux<MoneybirdContact> getAllContacts() {
         return webClientWithBaseUrl.get()
                 .uri("/contacts.json")
-                .retrieve()
-                .toEntityList(MoneybirdContact.class)
-                .block();
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToFlux(MoneybirdContact.class);
+                    else return response.createError().flux().cast(MoneybirdContact.class);
+                });
     }
 
     @Override
@@ -114,7 +118,7 @@ public class MoneybirdService implements IMoneybirdService {
     @Setter
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class MoneybirdContactWrapper {
+    public static class ContactWrapper {
         MoneybirdContact contact;
     }
 
@@ -133,7 +137,7 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Autowired
-    private void setWrappedContact(MoneybirdContactWrapper wrappedContact) {
+    private void setWrappedContact(ContactWrapper wrappedContact) {
         this.wrappedContact = wrappedContact;
     }
 }
