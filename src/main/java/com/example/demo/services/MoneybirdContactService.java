@@ -51,7 +51,7 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     @Override
     public Mono<MoneybirdContact> getContactById(String id) {
         return webClientWithBaseUrl.get()
-                .uri("/contacts/id")
+                .uri("/contacts/" + id + ".json")
                 .exchangeToMono(response -> {
                     if (response.statusCode() == HttpStatus.OK) {
                         return response.bodyToMono(MoneybirdContact.class);
