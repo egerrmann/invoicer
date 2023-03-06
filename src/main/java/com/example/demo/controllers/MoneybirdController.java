@@ -4,6 +4,7 @@ import com.example.demo.models.MoneybirdContact;
 import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,8 @@ import java.math.BigInteger;
 @RequestMapping("/moneybird")
 public class MoneybirdController {
     private IMoneybirdInvoiceService invoiceService;
+    // decide if getter is needed
+    @Getter
     private IMoneybirdContactService contactService;
 
     @GetMapping("/invoices")

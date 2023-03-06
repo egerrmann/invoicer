@@ -28,6 +28,12 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     @Value("${MBBearerToken}")
     private String token;
 
+    // decide if constructor is needed for testing or not
+    @Autowired(required = false)
+    public MoneybirdContactService(String baseUrl) {
+        webClientWithBaseUrl = WebClient.create(baseUrl);
+    }
+
     @Override
     public MoneybirdContact getTestContact() {
         MoneybirdContact contact = new MoneybirdContact();
@@ -107,7 +113,7 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                 });
     }
 
-    @Value("${mbApiBaseUrl}")
+    //@Value("${mbApiBaseUrl}")
     private void setWebClientWithBaseUrl(String baseUrl) {
         webClientWithBaseUrl = WebClient.builder()
                 .baseUrl(baseUrl)
