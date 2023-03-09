@@ -1,25 +1,67 @@
 package com.example.demo.controllers;
 
+import com.example.demo.models.SalesInvoice;
+import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import reactor.core.publisher.Flux;
+
+import java.math.BigInteger;
+
+import static org.hamcrest.core.Is.is;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebFluxTest(MoneybirdController.class)
+@WebMvcTest(MoneybirdController.class)
 public class MoneybirdControllerTest {
     @Autowired
-    private WebTestClient client;
+    private MockMvc mockMvc;
 
     @MockBean
-    private IMoneybirdInvoiceService service;
+    private IMoneybirdInvoiceService invoiceService;
+
+    @MockBean
+    private IMoneybirdContactService contactService;
 
     @Test
-    public void createNewInvoiceTest() throws Exception {
+    public void createInvoiceTest() throws Exception {
 
+    }
+
+    @Test
+    public void getAllInvoicesTest() throws Exception {
+        SalesInvoice invoice = new SalesInvoice();
+        invoice.setReference("30052");
+        invoice.setContactId(new BigInteger("380279277811139756"));
+        //invoice.setDiscount(15.5);
+
+        SalesInvoice.DetailsAttributes detailsAttributes =
+                new SalesInvoice.DetailsAttributes();
+        detailsAttributes.setDescription("My own chair");
+        detailsAttributes.setPrice(129.95);
+        invoice.getDetailsAttributes().add(detailsAttributes);
+
+        given(invoiceService.getAllInvoices()).willReturn(Flux.just(invoice));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/moneybird/invoices")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].contactId", is(new BigInteger("380279277811139756"))));
     }
 }

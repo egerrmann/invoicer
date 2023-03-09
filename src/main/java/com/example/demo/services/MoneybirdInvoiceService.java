@@ -23,10 +23,8 @@ import java.math.BigInteger;
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
-    @Value("${MBBearerToken}")
-    private String token;
 
-    @Override
+    // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
         SalesInvoice invoice = new SalesInvoice();
         invoice.setReference("30052");
@@ -76,13 +74,9 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
         SalesInvoice salesInvoice;
     }
 
-    @Value("${mbApiBaseUrl}")
-    private void setWebClientWithBaseUrl(String baseUrl) {
-        webClientWithBaseUrl = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build();
+    @Autowired
+    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
     }
 
     @Autowired

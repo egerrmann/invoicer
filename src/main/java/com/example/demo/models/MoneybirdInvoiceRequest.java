@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MoneybirdInvoiceRequest {
-    SalesInvoice invoice;
-    MoneybirdContact contact;
+    private SalesInvoice invoice;
+    private MoneybirdContact contact;
 }
