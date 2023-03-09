@@ -47,6 +47,17 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId></groupId>
+			<artifactId>hamcre</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -1,38 +1,34 @@
 package com.example.demo.services;
 
 import com.example.demo.models.SalesInvoice;
-import com.example.demo.services.interfaces.IMoneybirdService;
+import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
-import java.util.List;
 
 @Service
-public class MoneybirdService implements IMoneybirdService {
+public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
-    @Value("${MBBearerToken}")
-    private String token;
 
-    @Override
+    // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
         SalesInvoice invoice = new SalesInvoice();
         invoice.setReference("30052");
-        invoice.setContactId(new BigInteger("378315484942042971"));
+        invoice.setContactId(new BigInteger("380279277811139756"));
         //invoice.setDiscount(15.5);
 
         SalesInvoice.DetailsAttributes detailsAttributes =
@@ -45,35 +41,28 @@ public class MoneybirdService implements IMoneybirdService {
     }
 
     @Override
-    public ResponseEntity<List<SalesInvoice>> getAllInvoices() {
+    public Flux<SalesInvoice> getAllInvoices() {
         return webClientWithBaseUrl.get()
                 .uri("/sales_invoices.json")
-                .retrieve()
-                .toEntityList(SalesInvoice.class)
-                .block();
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToFlux(SalesInvoice.class);
+                    else return response.createError().flux().cast(SalesInvoice.class);
+                });
     }
 
     @Override
-    public ResponseEntity<SalesInvoice> createNewInvoice(SalesInvoice invoice) {
-        // For some reason code from below doesn't work. Apparently, there's
-        // a problem with the headers when getting a response from Moneybird
-        /*return webClientWithBaseUrl.post()
-                .uri("/sales_invoices.json")
-                .body(BodyInserters.fromValue(invoice))
-                .retrieve()
-                .toEntity(SalesInvoice.class)
-                .block();*/
+    public Mono<SalesInvoice> createInvoice(SalesInvoice invoice) {
         wrappedInvoice.setSalesInvoice(invoice);
 
-        ResponseEntity<SalesInvoice> responseEntity = webClientWithBaseUrl.post()
+        return webClientWithBaseUrl.post()
                 .uri("/sales_invoices.json")
                 .body(BodyInserters.fromValue(wrappedInvoice))
-                .retrieve()
-                .toEntity(SalesInvoice.class)
-                .block();
-
-        return new ResponseEntity<>(responseEntity.getBody(),
-                responseEntity.getStatusCode());
+                .exchangeToMono(response -> {
+                    if (response.statusCode() == HttpStatus.CREATED)
+                        return response.bodyToMono(SalesInvoice.class);
+                    else return response.createError();
+                });
     }
 
     @Component
@@ -85,13 +74,9 @@ public class MoneybirdService implements IMoneybirdService {
         SalesInvoice salesInvoice;
     }
 
-    @Value("${mbApiBaseUrl}")
-    private void setWebClientWithBaseUrl(String baseUrl) {
-        webClientWithBaseUrl = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build();
+    @Autowired
+    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
     }
 
     @Autowired
