@@ -2,9 +2,11 @@ package com.example.demo.services;
 
 import com.example.demo.models.EtsyAuthCredentials;
 import com.example.demo.models.OAuthChallenge;
+import com.example.demo.models.oauth2.EtsyOAuthProperties;
 import com.example.demo.services.interfaces.IEtsyAuthService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Sha2Crypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +20,12 @@ import java.util.*;
 @Service
 public class EtsyAuthService implements IEtsyAuthService {
 
-    @Value("${etsyClientId}")
-    private String clientId;
-    @Value("${callbackURL}")
-    private String redirectUri;
     private WebClient client;
+    private EtsyOAuthProperties properties;
+
+    public EtsyAuthService(EtsyOAuthProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public String getOAuthToken() {
@@ -32,8 +35,8 @@ public class EtsyAuthService implements IEtsyAuthService {
 
         EtsyAuthCredentials credentials = new EtsyAuthCredentials();
         credentials.setCodeChallenge(challengeData.getChallengeBase64String());
-        credentials.setClientId(clientId);
-        credentials.setRedirectUri(redirectUri);
+        credentials.setClientId(properties.getRegistration().getEtsy().getClientId());
+        credentials.setRedirectUri(properties.getRegistration().getEtsy().getRedirectUri());
 
         HttpHeaders allHeaders = new HttpHeaders();
         allHeaders.add("response_type", credentials.getResponseType());
