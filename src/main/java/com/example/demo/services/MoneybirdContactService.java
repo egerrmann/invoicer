@@ -25,16 +25,8 @@ import java.util.Optional;
 public class MoneybirdContactService implements IMoneybirdContactService {
     private WebClient webClientWithBaseUrl;
     private ContactWrapper wrappedContact;
-    @Value("${MBBearerToken}")
-    private String token;
 
-    // decide if constructor is needed for testing or not
-    @Autowired(required = false)
-    public MoneybirdContactService(String baseUrl) {
-        webClientWithBaseUrl = WebClient.create(baseUrl);
-    }
-
-    @Override
+    // TODO: move this method to the test class
     public MoneybirdContact getTestContact() {
         MoneybirdContact contact = new MoneybirdContact();
         contact.setCompanyName("Test company name");
@@ -67,10 +59,9 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     }
 
     @Override
-    public String getContactId(/*MoneybirdContact contact*/) {
-        MoneybirdContact testContact = getTestContact();
-        Optional<String> testContactFullName = testContact.getOptionalFullName();
-        Optional<String> testContactCompanyName = testContact.getOptionalCompanyName();
+    public String getContactId(MoneybirdContact contact) {
+        Optional<String> contactFullName = contact.getOptionalFullName();
+        Optional<String> contactCompanyName = contact.getOptionalCompanyName();
 
         Iterable<MoneybirdContact> addedContacts =
                 getAllContacts().toIterable();
@@ -82,12 +73,12 @@ public class MoneybirdContactService implements IMoneybirdContactService {
             Optional<String> addedContactCompanyName =
                     addedContact.getOptionalCompanyName();
 
-            boolean areFullNamesEqual = testContactFullName.isPresent()
+            boolean areFullNamesEqual = contactFullName.isPresent()
                     && addedContactFullName.isPresent()
-                    && addedContactFullName.get().equals(testContactFullName.get());
-            boolean areCompanyNamesEqual = testContactCompanyName.isPresent()
+                    && addedContactFullName.get().equals(contactFullName.get());
+            boolean areCompanyNamesEqual = contactCompanyName.isPresent()
                     && addedContactCompanyName.isPresent()
-                    && testContactCompanyName.get().equals(addedContactCompanyName.get());
+                    && contactCompanyName.get().equals(addedContactCompanyName.get());
 
             if (areFullNamesEqual || areCompanyNamesEqual) {
                 id = addedContact.getId().toString();
@@ -113,13 +104,9 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                 });
     }
 
-    //@Value("${mbApiBaseUrl}")
-    private void setWebClientWithBaseUrl(String baseUrl) {
-        webClientWithBaseUrl = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build();
+    @Autowired
+    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
     }
 
     @Component
