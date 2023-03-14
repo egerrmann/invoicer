@@ -1,7 +1,9 @@
 package com.example.demo.configuration.oauth2.etsy;
 
 import com.example.demo.models.oauth2.EtsyOAuthProperties;
+import com.example.demo.models.oauth2.EtsyUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -32,34 +34,39 @@ public class WebClientConfig {
 //        this.filter = filter;
     }
 
-//    @Bean
-//    WebClient webClient(OAuth2AuthorizedClientManager authorizedClientManager) {
-//        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
-//                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
-////        oauth2.setDefaultOAuth2AuthorizedClient(true);
-//        oauth2.setDefaultClientRegistrationId(properties.getRegistration().getEtsy().getClientId());
-//        return WebClient.builder()
-////                .baseUrl("https://openapi.etsy.com/v3/")
-//                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .defaultHeader("x-api-key", "Bearer " + properties.getRegistration().getEtsy().getClientId())
-////                .apply(oauth2.oauth2Configuration())
-//                .filter(oauth2)
-//                .build();
-//    }
+    @Bean("etsyWebClient")
+    public WebClient etsyWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+//        oauth2.setDefaultOAuth2AuthorizedClient(true);
+        oauth2.setDefaultClientRegistrationId("etsy");
+        return WebClient.builder()
+//                .baseUrl("https://openapi.etsy.com/v3/")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("x-api-key", properties.getRegistration().getEtsy().getClientId())
+//                .apply(oauth2.oauth2Configuration())
+                .filter(oauth2)
+                .build();
+    }
 
-//    @Bean
-//    public OAuth2AuthorizedClientManager authorizedClientManager(
-//            ClientRegistrationRepository clientRegistrationRepository,
-//            OAuth2AuthorizedClientRepository authorizedClientRepository) {
-//        OAuth2AuthorizedClientProvider authorizedClientProvider =
-//                OAuth2AuthorizedClientProviderBuilder.builder()
-//                        .authorizationCode()
-//                        .refreshToken()
-//                        .build();
-//        DefaultOAuth2AuthorizedClientManager authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(
-//                clientRegistrationRepository, authorizedClientRepository);
-//        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-//
-//        return authorizedClientManager;
+    @Bean
+    public OAuth2AuthorizedClientManager authorizedClientManager(
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientRepository authorizedClientRepository) {
+        OAuth2AuthorizedClientProvider authorizedClientProvider =
+                OAuth2AuthorizedClientProviderBuilder.builder()
+                        .authorizationCode()
+                        .refreshToken()
+                        .build();
+        DefaultOAuth2AuthorizedClientManager authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(
+                clientRegistrationRepository, authorizedClientRepository);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        return authorizedClientManager;
+    }
+
+//    @Override
+//    public void onApplicationEvent(EtsyUser event) {
+//        event.
 //    }
 }

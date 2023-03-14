@@ -4,6 +4,7 @@ import com.example.demo.models.oauth2.EtsyOAuthProperties;
 import com.example.demo.services.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,32 +41,19 @@ public class OAuth2LoginConfig {
         this.userService = userService;
     }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeHttpRequests(authorize -> authorize
-//                        .anyRequest().authenticated()
-//                )
-//                .oauth2Login(withDefaults())
-//                .oauth2Client(withDefaults())
-//                .headers()
-//                .addHeaderWriter(new StaticHeadersWriter("x-api-key", properties.getRegistration().getEtsy().getClientId()))
-//                .addHeaderWriter(new StaticHeadersWriter(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
-//        return http.build();
-//    }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//    @Order(1)
+    public SecurityFilterChain etsyFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().authenticated()
+                        .requestMatchers("/etsy/**").authenticated()
+                        // TODO: May come up with more strict rules for people accessing other URLs
+                        .anyRequest().permitAll()
                 )
                 .oauth2Login()
-//                .clientRegistrationRepository(this.clientRegistrationRepository())
-//                .authorizedClientService(this.authorizedClientService())
-//                .loginPage("/login")
+                // TODO Add refresh token catcher
                 .userInfoEndpoint()
-                .userService((OAuth2UserService<OAuth2UserRequest, OAuth2User>) this.userService);
+                .userService(this.userService);
 
         return http.build();
     }
@@ -79,13 +67,6 @@ public class OAuth2LoginConfig {
                 .scope(properties.getRegistration().getEtsy().getScope())
                 .authorizationUri(properties.getProvider().getEtsy().getAuthorizationUri())
                 .tokenUri(properties.getProvider().getEtsy().getTokenUri())
-                .userInfoUri(properties.getProvider().getEtsy().getUserInfoUri())
-                // may try to check if any other IdTokenClaimsNames may work
-                .userNameAttributeName(IdTokenClaimNames.SUB)
-//                // when using either QUERY or HEAD it throws a different error
-//                // check why, mb the other error is more "correct" for my case
-//                .userInfoAuthenticationMethod(AuthenticationMethod.FORM)
-                .clientName(properties.getRegistration().getEtsy().getClientName())
                 .build();
     }
 

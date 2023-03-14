@@ -1,8 +1,10 @@
 package com.example.demo.services;
 
+import com.example.demo.models.AccessTokenReceivedEvent;
 import com.example.demo.models.oauth2.EtsyOAuthProperties;
 import com.example.demo.models.oauth2.EtsyUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,10 +28,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     // So I need to figure out what causes the error and get rid of it
 
     private EtsyOAuthProperties properties;
+    private ApplicationEventPublisher publisher;
+    private EtsyUser user;
 
-    @Autowired
-    public void setProperties(EtsyOAuthProperties properties) {
+    public CustomOAuth2UserService(EtsyOAuthProperties properties, ApplicationEventPublisher publisher, EtsyUser user) {
         this.properties = properties;
+        this.publisher = publisher;
+        this.user = user;
     }
 
     private WebClient setWebClient(String accessToken) {
@@ -50,14 +55,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private EtsyUser getUser(String accessToken) {
         WebClient webClient = setWebClient(accessToken);
         int userId = getUserId(accessToken);
-        Mono<EtsyUser> user = webClient.get()
+        Mono<EtsyUser> resp = webClient.get()
                 .uri("https://openapi.etsy.com/v3/application/users/" + userId)
                 .retrieve()
                 .bodyToMono(EtsyUser.class);
-        user.subscribe(System.out::println, error -> {
+        resp.subscribe(System.out::println, error -> {
             System.out.println(error.toString());
         });
-        return user.block();
+        user = resp.block();
+
+        assert user != null;
+        user.setAccessToken(accessToken);
+
+        publisher.publishEvent(new AccessTokenReceivedEvent(user));
+        return user;
     }
 
     @Override
@@ -66,7 +77,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         EtsyUser etsyUser = getUser(oAuth2UserRequest.getAccessToken().getTokenValue());
 //        getUser(oAuth2UserRequest.getAccessToken().getTokenValue());
 //        EtsyUser etsyUser = new EtsyUser();
-        final OAuth2User user = new DefaultOAuth2User(authorities, etsyUser.getAttributes(), "email");
+        final OAuth2User user = new DefaultOAuth2User(authorities, etsyUser.getAttributes(), "first_name");
         return user;
     }
 }

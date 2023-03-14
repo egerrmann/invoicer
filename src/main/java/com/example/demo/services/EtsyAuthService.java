@@ -77,7 +77,7 @@ public class EtsyAuthService implements IEtsyAuthService {
                     System.out.println("\nResponse body: " + entity.getBody() + "\n");
                 },
                 error -> {
-                    System.out.println("\nError: " + error.getMessage());                }
+                    System.out.println("\nControllerError: " + error.getMessage());                }
         );
 
         return data;
