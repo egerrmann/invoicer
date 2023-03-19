@@ -4,14 +4,10 @@ import com.example.demo.models.MoneybirdContact;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -26,13 +22,10 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     private WebClient webClientWithBaseUrl;
     private ContactWrapper wrappedContact;
 
-    // TODO: move this method to the test class
-    public MoneybirdContact getTestContact() {
-        MoneybirdContact contact = new MoneybirdContact();
-        contact.setCompanyName("Test company name");
-        contact.setAddress1("NL, Test st, apt. 67");
-        contact.setPhone("+375291234567");
-        return contact;
+    public MoneybirdContactService() {}
+
+    public MoneybirdContactService(String baseUrl) {
+        webClientWithBaseUrl = WebClient.create(baseUrl);
     }
 
     @Override
@@ -104,18 +97,17 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                 });
     }
 
-    @Autowired
-    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-    }
-
     @Component
-    @Getter
-    @Setter
+    @Data
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ContactWrapper {
         MoneybirdContact contact;
+    }
+
+    @Autowired
+    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
     }
 
     @Autowired

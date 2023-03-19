@@ -3,18 +3,13 @@ package com.example.demo.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
@@ -58,9 +53,7 @@ public class SalesInvoice {
         this.customFieldsAttributes = customFieldsAttributes;
     }
 
-    @Getter
-    @Setter
-    @ToString
+    @Data
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DetailsAttributes {
@@ -80,9 +73,7 @@ public class SalesInvoice {
         private Boolean automatedTaxEnabled;
     }
 
-    @Getter
-    @Setter
-    @ToString
+    @Data
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class CustomFieldsAttributes {

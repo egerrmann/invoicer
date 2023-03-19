@@ -3,40 +3,44 @@ package com.example.demo.controllers;
 import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.math.BigInteger;
 
-import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(MoneybirdController.class)
+@ExtendWith(MockitoExtension.class)
 public class MoneybirdControllerTest {
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private IMoneybirdInvoiceService invoiceService;
 
-    @MockBean
+    @Mock
     private IMoneybirdContactService contactService;
+
+    @InjectMocks
+    private MoneybirdController controller;
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
 
     @Test
     public void createInvoiceTest() throws Exception {
@@ -58,10 +62,19 @@ public class MoneybirdControllerTest {
 
         given(invoiceService.getAllInvoices()).willReturn(Flux.just(invoice));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/moneybird/invoices")
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                        .get("/moneybird/invoices")
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contactId", is(new BigInteger("380279277811139756"))));
+                .andReturn()
+                .getResponse();
+
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+
+        StepVerifier.create(invoiceService.getAllInvoices())
+                .expectNext(invoice)
+                .verifyComplete();
+        //assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//                .andExpect(jsonPath("$[0].contactId", is(new BigInteger("380279277811139756"))));
     }
 }

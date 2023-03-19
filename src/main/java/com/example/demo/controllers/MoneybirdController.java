@@ -18,12 +18,12 @@ import java.math.BigInteger;
 @RequestMapping("/moneybird")
 public class MoneybirdController {
     private IMoneybirdInvoiceService invoiceService;
-    // decide if getter is needed
+    // decide if getter is needed for testing
     @Getter
     private IMoneybirdContactService contactService;
 
     @GetMapping("/invoices")
-    public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() {
+    public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() throws Exception {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(invoiceService.getAllInvoices());
@@ -34,7 +34,7 @@ public class MoneybirdController {
 
     @PostMapping("/invoices")
     public ResponseEntity<Mono<SalesInvoice>> createInvoice(
-            @RequestBody MoneybirdInvoiceRequest invoiceRequest) {
+            @RequestBody MoneybirdInvoiceRequest invoiceRequest) throws Exception {
 
         try {
             SalesInvoice invoice = invoiceRequest.getInvoice();
@@ -50,7 +50,7 @@ public class MoneybirdController {
     }
 
     @GetMapping("/contacts")
-    public ResponseEntity<Flux<MoneybirdContact>> getAllContacts() {
+    public ResponseEntity<Flux<MoneybirdContact>> getAllContacts() throws Exception {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(contactService.getAllContacts());
@@ -61,7 +61,7 @@ public class MoneybirdController {
 
     @GetMapping("/contacts/{id}")
     private ResponseEntity<Mono<MoneybirdContact>> getContactById(
-            @PathVariable String id) {
+            @PathVariable String id) throws Exception {
 
         try {
             return ResponseEntity.status(HttpStatus.OK)
@@ -74,7 +74,7 @@ public class MoneybirdController {
     // TODO: substitute the testContact variable with a contact method argument
     @PostMapping("/contacts")
     public ResponseEntity<String> createContact(
-            @RequestBody MoneybirdContact contact) {
+            @RequestBody MoneybirdContact contact) throws Exception {
 
         try {
             String id = contactService.getContactId(contact);
@@ -88,7 +88,6 @@ public class MoneybirdController {
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .body(body);
             }
-            // status code?
             else
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(id);

@@ -2,16 +2,12 @@ package com.example.demo.models;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.math.BigInteger;
 import java.util.Optional;
 
-@Getter
-@Setter
-@ToString
+@Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MoneybirdContact {
     private BigInteger id;
