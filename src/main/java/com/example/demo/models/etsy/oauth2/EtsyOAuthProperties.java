@@ -1,4 +1,4 @@
-package com.example.demo.models.oauth2;
+package com.example.demo.models.etsy.oauth2;
 
 import lombok.Getter;
 import lombok.Setter;

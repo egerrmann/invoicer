@@ -1,9 +1,8 @@
-package com.example.demo.models;
+package com.example.demo.models.etsy;
 
-import com.example.demo.models.oauth2.EtsyOAuthProperties;
+import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 //@Component

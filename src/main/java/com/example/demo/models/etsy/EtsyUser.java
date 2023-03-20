@@ -1,4 +1,4 @@
-package com.example.demo.models.oauth2;
+package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -22,7 +22,7 @@ public class EtsyUser {
     private String primaryEmail;
     private String firstName;
     private String lastName;
-    private String imageUrl75X75;
+    private String imageUrl75x75;
     private String accessToken;
 
     public Map<String, Object> getAttributes() {
@@ -33,4 +33,14 @@ public class EtsyUser {
         attributes.put("last_name", this.lastName);
         return attributes;
     }
+
+    // May come up with a way to return and updated  EtsyUser
+    // Will need to check the Bean lifecycles again
+
+    // Or actually I will store the data in cookies and make use of them
+    // NOTE: may not work for automation
+
+//    public EtsyUser updateUser() {
+//        return this;
+//    }
 }
