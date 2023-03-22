@@ -1,9 +1,9 @@
 package com.example.demo.controllers;
 
 
+import com.example.demo.models.etsy.EtsyLedger;
 import com.example.demo.models.etsy.EtsyReceipt;
-import com.example.demo.models.etsy.EtsyShop;
-import com.example.demo.services.interfaces.IEtsyAuthService;
+import com.example.demo.services.interfaces.IEtsyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,28 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/etsy")
 public class EtsyController {
-    private IEtsyAuthService authService;
+    private IEtsyService authService;
 
     @Autowired
-    private void setService(IEtsyAuthService authService) {
+    private void setService(IEtsyService authService) {
         this.authService = authService;
-    }
-
-    @GetMapping("/user")
-    public void tryAuth() {
-        authService.tryOauth();
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<Mono<EtsyShop>> getShop() {
-        Mono<EtsyShop> resp = authService.getShop();
-        return ResponseEntity.status(HttpStatus.OK).body(resp);
-//        return resp;
     }
 
     @GetMapping("/receipts")
@@ -40,5 +27,11 @@ public class EtsyController {
         Flux<EtsyReceipt> resp = authService.getReceipts();
         return ResponseEntity.status(HttpStatus.OK).body(resp);
 //        return resp;
+    }
+
+    @GetMapping("/ledgers")
+    public ResponseEntity<Flux<EtsyLedger>> getLedgers() {
+        Flux<EtsyLedger> resp = authService.getLedgers();
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 }
