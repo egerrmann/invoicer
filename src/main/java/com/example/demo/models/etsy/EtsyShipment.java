@@ -2,15 +2,13 @@ package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@ToString
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@ToString
+@Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyShipment {
     private Long receiptShippingId;

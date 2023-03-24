@@ -2,17 +2,15 @@ package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@ToString
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@ToString
+@Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyReceipt {
     private Long receiptId;
@@ -55,10 +53,11 @@ public class EtsyReceipt {
     private List<EtsyTransaction> transactions;
     private List<Refund> refunds;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ToString
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @ToString
+    @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Refund {
         private EtsyPrice amount;

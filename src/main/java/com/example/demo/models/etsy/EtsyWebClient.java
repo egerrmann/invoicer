@@ -6,6 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 //@Component
+// This class is not used at the moment, but
+// it may come in handy later
 public class EtsyWebClient {
     private WebClient webclient;
     private String accessToken;

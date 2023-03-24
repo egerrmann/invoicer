@@ -2,16 +2,15 @@ package com.example.demo.models.etsy.responses;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@ToString
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@ToString
+@Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class GetEtsyList {
     private int count;

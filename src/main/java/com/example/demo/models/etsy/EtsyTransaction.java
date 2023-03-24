@@ -2,17 +2,15 @@ package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@ToString
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@ToString
+@Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyTransaction {
     private Long transactionId;
@@ -46,10 +44,11 @@ public class EtsyTransaction {
     private Long buyerCoupon;
     private Long shopCoupon;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ToString
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @ToString
+    @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Variation {
         private Long propertyId;
@@ -58,10 +57,11 @@ public class EtsyTransaction {
         private String formattedValue;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ToString
+//    @Getter
+//    @Setter
+//    @NoArgsConstructor
+//    @ToString
+    @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ProductDaum {
         private Long propertyId;
