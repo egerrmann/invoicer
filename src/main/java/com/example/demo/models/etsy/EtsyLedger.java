@@ -6,10 +6,6 @@ import lombok.*;
 
 import java.util.List;
 
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@ToString
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyLedger {
@@ -27,11 +23,7 @@ public class EtsyLedger {
     private String referenceId;
     private List<PaymentAdjustment> paymentAdjustments;
 
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @ToString
+    @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class PaymentAdjustment {
         private Long paymentAdjustmentId;
@@ -50,10 +42,7 @@ public class EtsyLedger {
         private Long updatedTimestamp;
         private List<PaymentAdjustmentItem> paymentAdjustmentItems;
 
-        @Getter
-        @Setter
-        @NoArgsConstructor
-        @ToString
+        @Data
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class PaymentAdjustmentItem {
             private Long paymentAdjustmentId;

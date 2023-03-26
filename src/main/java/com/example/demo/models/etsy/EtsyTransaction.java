@@ -6,10 +6,6 @@ import lombok.*;
 
 import java.util.List;
 
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@ToString
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyTransaction {
@@ -44,10 +40,6 @@ public class EtsyTransaction {
     private Long buyerCoupon;
     private Long shopCoupon;
 
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    @ToString
     @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Variation {
@@ -57,10 +49,6 @@ public class EtsyTransaction {
         private String formattedValue;
     }
 
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    @ToString
     @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ProductDaum {

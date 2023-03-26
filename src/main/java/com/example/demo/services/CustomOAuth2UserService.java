@@ -6,6 +6,7 @@ import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetMeResponse;
 import org.javatuples.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,6 +32,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private EtsyOAuthProperties properties;
     private ApplicationEventPublisher publisher;
+
+    @Value("${etsy.base-url}")
+    private String baseUrl;
 
     public CustomOAuth2UserService(EtsyOAuthProperties properties, ApplicationEventPublisher publisher) {
         this.properties = properties;
@@ -77,7 +81,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     // Gets ids of the User and the shop they own
     private GetMeResponse getIds(WebClient webClient) {
         Mono<GetMeResponse> resp = webClient.get()
-                .uri("https://openapi.etsy.com/v3/application/users/me")
+                .uri(baseUrl + "users/me")
                 .retrieve()
                 .bodyToMono(GetMeResponse.class);
         resp.subscribe(System.out::println, error -> {
@@ -90,7 +94,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     // Gets the User information
     private EtsyUser getUser(WebClient webClient, int userId, String accessToken) {
         Mono<EtsyUser> resp = webClient.get()
-                .uri("https://openapi.etsy.com/v3/application/users/" + userId)
+                .uri(baseUrl + "users/" + userId)
                 .retrieve()
                 .bodyToMono(EtsyUser.class);
         EtsyUser user = resp.block();
@@ -104,7 +108,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     // Gets the Shop information
     private EtsyShop getShop(WebClient webClient, int shopId) {
         Mono<EtsyShop> resp = webClient.get()
-                .uri("https://openapi.etsy.com/v3/application/shops/" + shopId)
+                .uri(baseUrl + "shops/" + shopId)
                 .retrieve()
                 .bodyToMono(EtsyShop.class);
         EtsyShop shop = resp.block();

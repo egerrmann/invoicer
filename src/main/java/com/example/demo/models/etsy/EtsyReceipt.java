@@ -6,10 +6,6 @@ import lombok.*;
 
 import java.util.List;
 
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@ToString
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyReceipt {
@@ -53,10 +49,6 @@ public class EtsyReceipt {
     private List<EtsyTransaction> transactions;
     private List<Refund> refunds;
 
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    @ToString
     @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Refund {

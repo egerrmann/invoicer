@@ -9,10 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@ToString
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyUser {

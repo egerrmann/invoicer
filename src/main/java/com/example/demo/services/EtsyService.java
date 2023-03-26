@@ -8,6 +8,7 @@ import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetEtsyList;
 import com.example.demo.services.interfaces.IEtsyService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -29,35 +30,14 @@ public class EtsyService implements IEtsyService {
     private EtsyUser user;
     private EtsyShop shop;
 
+    @Value("${etsy.base-url}")
+    private String baseUrl;
+
     public EtsyService(EtsyOAuthProperties properties, EtsyUser user) {
         this.properties = properties;
         this.webClient = WebClient.create();
         this.user = user;
     }
-
-//    @Override
-//    public void tryOauth() {
-//        Mono<EtsyUser> resp = webClient.get()
-//                .uri("https://openapi.etsy.com/v3/application/users/" + user.getUserId())
-//                .retrieve()
-//                .bodyToMono(EtsyUser.class);
-//        resp.subscribe(System.out::println, error -> {
-//            System.out.println(error.toString());
-//        });
-//    }
-//
-//    @Override
-//    public Mono<EtsyShop> getShop() {
-//        Mono<EtsyShop> resp = webClient.get()
-//                .uri("https://openapi.etsy.com/v3/application/users/me")
-//                .retrieve()
-//                .bodyToMono(EtsyShop.class);
-//        resp.subscribe(System.out::println, error -> {
-//            System.out.println(error.toString());
-//        });
-//
-//        return resp;
-//    }
 
     @Override
     public Flux<EtsyReceipt> getReceipts() {
@@ -133,7 +113,7 @@ public class EtsyService implements IEtsyService {
                 .defaultHeader("x-api-key", properties.getRegistration().getEtsy().getClientId())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + event.getUser().getAccessToken())
-                .baseUrl("https://openapi.etsy.com/v3/application/")
+                .baseUrl(baseUrl)
                 .build();
     }
 }
