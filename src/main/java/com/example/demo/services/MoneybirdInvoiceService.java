@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -15,27 +14,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigInteger;
-
 @Service
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
-    private WebClient webClientWithBaseUrl;
-    private SalesInvoiceWrapper wrappedInvoice;
+    private final WebClient webClientWithBaseUrl;
+    private final SalesInvoiceWrapper wrappedInvoice;
 
-    // TODO: move this method to the test class
-    public SalesInvoice getTestInvoice() {
-        SalesInvoice invoice = new SalesInvoice();
-        invoice.setReference("30052");
-        invoice.setContactId(new BigInteger("380279277811139756"));
-        //invoice.setDiscount(15.5);
-
-        SalesInvoice.DetailsAttributes detailsAttributes =
-                new SalesInvoice.DetailsAttributes();
-        detailsAttributes.setDescription("My own chair");
-        detailsAttributes.setPrice(129.95);
-        invoice.getDetailsAttributes().add(detailsAttributes);
-
-        return invoice;
+    public MoneybirdInvoiceService(WebClient webClientWithBaseUrl, SalesInvoiceWrapper wrappedInvoice) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
+        this.wrappedInvoice = wrappedInvoice;
     }
 
     @Override
@@ -69,15 +55,5 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SalesInvoiceWrapper {
         SalesInvoice salesInvoice;
-    }
-
-    @Autowired
-    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-    }
-
-    @Autowired
-    private void setWrappedInvoice(SalesInvoiceWrapper wrappedInvoice) {
-        this.wrappedInvoice = wrappedInvoice;
     }
 }

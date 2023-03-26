@@ -6,6 +6,7 @@ import com.example.demo.models.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +19,18 @@ import java.math.BigInteger;
 @RequestMapping("/moneybird")
 public class MoneybirdController {
     private IMoneybirdInvoiceService invoiceService;
-    // decide if getter is needed for testing
+    // decide if getter and setter are needed for testing
     @Getter
+    @Setter
     private IMoneybirdContactService contactService;
+
+    @Autowired
+    public MoneybirdController(IMoneybirdInvoiceService invoiceService, IMoneybirdContactService contactService) {
+        this.invoiceService = invoiceService;
+        this.contactService = contactService;
+    }
+
+    public MoneybirdController() {}
 
     @GetMapping("/invoices")
     public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() throws Exception {
@@ -39,8 +49,11 @@ public class MoneybirdController {
         try {
             SalesInvoice invoice = invoiceRequest.getInvoice();
 
-            String contactId = createContact(invoiceRequest.getContact()).getBody();
-            invoice.setContactId(new BigInteger(contactId));
+            BigInteger contactId = contactService
+                    .createContact(invoiceRequest.getContact())
+                    .block()
+                    .getId();
+            invoice.setContactId(contactId);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(invoiceService.createInvoice(invoice));
@@ -71,7 +84,6 @@ public class MoneybirdController {
         }
     }
 
-    // TODO: substitute the testContact variable with a contact method argument
     @PostMapping("/contacts")
     public ResponseEntity<String> createContact(
             @RequestBody MoneybirdContact contact) throws Exception {
@@ -89,21 +101,10 @@ public class MoneybirdController {
                         .body(body);
             }
             else
-                return ResponseEntity.status(HttpStatus.CONFLICT)
+                return ResponseEntity.status(HttpStatus.OK)
                         .body(id);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
-
-    @Autowired
-    private void setInvoiceService(IMoneybirdInvoiceService invoiceService) {
-        this.invoiceService = invoiceService;
-    }
-
-    @Autowired
-    public void setContactService(IMoneybirdContactService contactService) {
-        this.contactService = contactService;
-    }
-
 }

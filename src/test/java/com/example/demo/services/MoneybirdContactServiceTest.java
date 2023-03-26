@@ -2,6 +2,7 @@ package com.example.demo.services;
 
 import com.example.demo.controllers.MoneybirdController;
 import com.example.demo.models.MoneybirdContact;
+import com.example.demo.models.SalesInvoice;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -96,5 +98,20 @@ public class MoneybirdContactServiceTest {
         contact.setAddress1("NL, Test st, apt. 67");
         contact.setPhone("+375291234567");
         return contact;
+    }
+
+    private SalesInvoice getTestInvoice() {
+        SalesInvoice invoice = new SalesInvoice();
+        invoice.setReference("30052");
+        invoice.setContactId(new BigInteger("380279277811139756"));
+        //invoice.setDiscount(15.5);
+
+        SalesInvoice.DetailsAttributes detailsAttributes =
+                new SalesInvoice.DetailsAttributes();
+        detailsAttributes.setDescription("My own chair");
+        detailsAttributes.setPrice(129.95);
+        invoice.getDetailsAttributes().add(detailsAttributes);
+
+        return invoice;
     }
 }

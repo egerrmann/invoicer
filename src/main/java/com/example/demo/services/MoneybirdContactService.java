@@ -19,10 +19,15 @@ import java.util.Optional;
 
 @Service
 public class MoneybirdContactService implements IMoneybirdContactService {
-    private WebClient webClientWithBaseUrl;
+    private final WebClient webClientWithBaseUrl;
     private ContactWrapper wrappedContact;
 
-    public MoneybirdContactService() {}
+    @Autowired
+    public MoneybirdContactService(WebClient webClientWithBaseUrl,
+                                   ContactWrapper wrappedContact) {
+        this.webClientWithBaseUrl = webClientWithBaseUrl;
+        this.wrappedContact = wrappedContact;
+    }
 
     public MoneybirdContactService(String baseUrl) {
         webClientWithBaseUrl = WebClient.create(baseUrl);
@@ -103,15 +108,5 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ContactWrapper {
         MoneybirdContact contact;
-    }
-
-    @Autowired
-    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-    }
-
-    @Autowired
-    private void setWrappedContact(MoneybirdContactService.ContactWrapper wrappedContact) {
-        this.wrappedContact = wrappedContact;
     }
 }
