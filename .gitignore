@@ -10,6 +10,7 @@ target/
 .factorypath
 .project
 *.properties
+/src/main/resources/application.yml
 .settings
 .springBeans
 .sts4-cache
@@ -32,3 +33,4 @@ build/
 
 ### VS Code ###
 .vscode/
+
