@@ -1,4 +1,4 @@
-package com.example.demo.models;
+package com.example.demo.models.moneybird;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

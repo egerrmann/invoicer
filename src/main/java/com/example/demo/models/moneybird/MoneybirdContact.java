@@ -1,4 +1,4 @@
-package com.example.demo.models;
+package com.example.demo.models.moneybird;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -48,15 +48,18 @@ public class MoneybirdContact {
     private Boolean directDebit;
     // some fields are not added
 
-    public String getFullName() {
+
+    // decide if we need these methods (most likely not as etsy
+    // provides only a company name, not name with surname)
+    /*public String getFullName() {
         if (firstname == null || lastname == null)
             return null;
         return firstname + lastname;
-    }
+    }*/
 
-    public Optional<String> getOptionalFullName() {
+    /*public Optional<String> getOptionalFullName() {
         return Optional.ofNullable(getFullName());
-    }
+    }*/
 
     public Optional<String> getOptionalCompanyName() {
         return Optional.ofNullable(companyName);

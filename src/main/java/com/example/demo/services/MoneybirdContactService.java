@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -8,10 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -60,7 +57,7 @@ public class MoneybirdContactService implements IMoneybirdContactService {
 
     @Override
     public String getContactId(MoneybirdContact contact) {
-        Optional<String> contactFullName = contact.getOptionalFullName();
+//        Optional<String> contactFullName = contact.getOptionalFullName();
         Optional<String> contactCompanyName = contact.getOptionalCompanyName();
 
         Iterable<MoneybirdContact> addedContacts =
@@ -68,19 +65,20 @@ public class MoneybirdContactService implements IMoneybirdContactService {
         String id = null;
 
         for (MoneybirdContact addedContact : addedContacts) {
-            Optional<String> addedContactFullName =
-                    addedContact.getOptionalFullName();
+//            Optional<String> addedContactFullName =
+//                    addedContact.getOptionalFullName();
             Optional<String> addedContactCompanyName =
                     addedContact.getOptionalCompanyName();
 
-            boolean areFullNamesEqual = contactFullName.isPresent()
-                    && addedContactFullName.isPresent()
-                    && addedContactFullName.get().equals(contactFullName.get());
+//            boolean areFullNamesEqual = contactFullName.isPresent()
+//                    && addedContactFullName.isPresent()
+//                    && addedContactFullName.get().equals(contactFullName.get());
             boolean areCompanyNamesEqual = contactCompanyName.isPresent()
                     && addedContactCompanyName.isPresent()
                     && contactCompanyName.get().equals(addedContactCompanyName.get());
 
-            if (areFullNamesEqual || areCompanyNamesEqual) {
+//            if (areFullNamesEqual || areCompanyNamesEqual) {
+            if (areCompanyNamesEqual) {
                 id = addedContact.getId().toString();
                 break;
             }

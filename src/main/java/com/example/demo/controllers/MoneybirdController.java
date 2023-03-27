@@ -1,10 +1,12 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.MoneybirdContact;
-import com.example.demo.models.MoneybirdInvoiceRequest;
-import com.example.demo.models.SalesInvoice;
+import com.example.demo.models.moneybird.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdInvoiceRequest;
+import com.example.demo.models.moneybird.SalesInvoice;
+import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
+import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,11 @@ import java.math.BigInteger;
 public class MoneybirdController {
     private IMoneybirdInvoiceService invoiceService;
     private IMoneybirdContactService contactService;
+    private IMoneybirdTaxRatesService taxRatesService;
+
+    public MoneybirdController(IMoneybirdTaxRatesService taxRatesService) {
+        this.taxRatesService = taxRatesService;
+    }
 
     @GetMapping("/invoices")
     public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() {
@@ -91,6 +98,16 @@ public class MoneybirdController {
                         .body(id);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/tax-rates")
+    public ResponseEntity<Flux<MoneybirdTaxRate>> getAllTaxes() {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taxRatesService.getAllTaxRates());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Flux.error(ex));
         }
     }
 

@@ -1,6 +1,6 @@
 package com.example.demo.services.interfaces;
 
-import com.example.demo.models.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdContact;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

@@ -1,7 +1,7 @@
 package com.example.demo.services;
 
-import com.example.demo.models.MoneybirdContact;
-import com.example.demo.models.SalesInvoice;
+import com.example.demo.models.moneybird.MoneybirdContact;
+import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.IEtsyService;
 import com.example.demo.services.interfaces.IInvoicerService;
