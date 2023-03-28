@@ -1,11 +1,9 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.moneybird.MoneybirdContact;
-import com.example.demo.models.moneybird.MoneybirdInvoiceRequest;
-import com.example.demo.models.moneybird.SalesInvoice;
-import com.example.demo.models.moneybird.MoneybirdTaxRate;
+import com.example.demo.models.moneybird.*;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
+import com.example.demo.services.interfaces.IMoneybirdLedgerAccountService;
 import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -20,10 +18,13 @@ import java.math.BigInteger;
 public class MoneybirdController {
     private IMoneybirdInvoiceService invoiceService;
     private IMoneybirdContactService contactService;
-    private IMoneybirdTaxRatesService taxRatesService;
+    private final IMoneybirdTaxRatesService taxRatesService;
+    private final IMoneybirdLedgerAccountService ledgerAccountService;
 
-    public MoneybirdController(IMoneybirdTaxRatesService taxRatesService) {
+    public MoneybirdController(IMoneybirdTaxRatesService taxRatesService,
+                               IMoneybirdLedgerAccountService ledgerAccountService) {
         this.taxRatesService = taxRatesService;
+        this.ledgerAccountService = ledgerAccountService;
     }
 
     @GetMapping("/invoices")
@@ -75,7 +76,6 @@ public class MoneybirdController {
         }
     }
 
-    // TODO: substitute the testContact variable with a contact method argument
     @PostMapping("/contacts")
     public ResponseEntity<String> createContact(
             @RequestBody MoneybirdContact contact) {
@@ -108,6 +108,29 @@ public class MoneybirdController {
                     .body(taxRatesService.getAllTaxRates());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Flux.error(ex));
+        }
+    }
+
+    @GetMapping("/ledgers")
+    public ResponseEntity<Flux<MoneybirdLedgerAccount>> getAllLedgers() {
+        try {
+            int a = 43;
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ledgerAccountService.getAllLedgers());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Flux.error(ex));
+        }
+    }
+
+    @PostMapping("/ledgers")
+    public ResponseEntity<Mono<MoneybirdLedgerAccount>> createLedger(
+            @RequestBody MoneybirdLedgerAccount ledger) {
+
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ledgerAccountService.createLedger(ledger));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Mono.error(ex));
         }
     }
 

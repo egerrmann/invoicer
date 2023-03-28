@@ -13,9 +13,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfigMB {
-    @Value("${MBBearerToken}")
+    @Value("${moneybird.bearer-token}")
     private String token;
-    @Value("${mbApiBaseUrl}")
+    @Value("${moneybird.base-url}")
     private String baseUrl;
 
     @Bean

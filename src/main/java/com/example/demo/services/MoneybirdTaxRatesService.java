@@ -8,10 +8,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 @Service
-public class MoneybirdTaxRatesServiceService implements IMoneybirdTaxRatesService {
-    private WebClient webClientWithBaseUrl;
+public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
+    private final WebClient webClientWithBaseUrl;
 
-    public MoneybirdTaxRatesServiceService(WebClient webClientWithBaseUrl) {
+    public MoneybirdTaxRatesService(WebClient webClientWithBaseUrl) {
         this.webClientWithBaseUrl = webClientWithBaseUrl;
     }
 
@@ -22,7 +22,10 @@ public class MoneybirdTaxRatesServiceService implements IMoneybirdTaxRatesServic
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK))
                         return response.bodyToFlux(MoneybirdTaxRate.class);
-                    else return response.createError().flux().cast(MoneybirdTaxRate.class);
+                    else
+                        return response.createError()
+                                .flux()
+                                .cast(MoneybirdTaxRate.class);
                 });
     }
 }
