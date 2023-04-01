@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 @Service
 public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountService {
     private final WebClient webClientWithBaseUrl;
@@ -41,7 +43,6 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
     @Override
     public Mono<MoneybirdLedgerAccount> createLedger(MoneybirdLedgerAccount ledger) {
         wrappedLedger.setLedgerAccount(ledger);
-        System.out.println(wrappedLedger);
 
         return webClientWithBaseUrl.post()
                 .uri("/ledger_accounts.json")
@@ -54,10 +55,25 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
                 });
     }
 
-    /*@Override
+    @Override
     public String getLedgerId(MoneybirdLedgerAccount ledger) {
+        String ledgerName = ledger.getName();
 
-    }*/
+        Iterable<MoneybirdLedgerAccount> addedLedgers = getAllLedgers()
+                .toIterable();
+        String id = null;
+
+        for (MoneybirdLedgerAccount addedLedger : addedLedgers) {
+            String addedLedgerName = addedLedger.getName();
+
+            if (Objects.equals(addedLedgerName, ledgerName)) {
+                id = addedLedger.getId();
+                break;
+            }
+        }
+
+        return id;
+    }
 
     @Component
     @Data
