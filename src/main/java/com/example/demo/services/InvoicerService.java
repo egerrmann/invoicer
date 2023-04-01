@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import com.example.demo.models.moneybird.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.IEtsyService;
@@ -68,5 +69,9 @@ public class InvoicerService implements IInvoicerService {
         // Add the rest of the fields and create a contact with the Service
 
         return contact;
+    }
+
+    private MoneybirdTaxRate getTaxRate(MoneybirdTaxRate taxRate) {
+        return null;
     }
 }
