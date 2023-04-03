@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Data
@@ -32,14 +34,30 @@ public class EtsyReceipt {
     private Boolean isPaid;
     private Boolean isShipped;
     private Long createTimestamp;
+
+    public String getCreateIsoDate() {
+        return LocalDate.ofEpochDay(createTimestamp / 86400000L)
+                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
     private Long createdTimestamp;
     private Long updateTimestamp;
     private Long updatedTimestamp;
     private Boolean isGift;
     private String giftMessage;
+
+    // a number equal to the total_price minus
+    // the coupon discount plus tax and shipping costs
     private EtsyPrice grandtotal;
+
+    // a number equal to the total_price minus coupon
+    // discounts. Does not included tax or shipping costs
     private EtsyPrice subtotal;
+
+    // a number equal to the sum of the individual listings'
+    // (price * quantity). Does not included tax or shipping costs
     private EtsyPrice totalPrice;
+
     private EtsyPrice totalShippingCost;
     private EtsyPrice totalTaxCost;
     private EtsyPrice totalVatCost;

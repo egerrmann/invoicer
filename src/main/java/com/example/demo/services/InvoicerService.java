@@ -9,7 +9,10 @@ import com.example.demo.services.interfaces.IInvoicerService;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +29,14 @@ public class InvoicerService implements IInvoicerService {
     }
 
     @Override
-    public void createInvoices() {
+    public Flux<SalesInvoice> createInvoices() {
         List<EtsyReceipt> receipts = (List<EtsyReceipt>) etsyService.getReceipts().toIterable();
         List<SalesInvoice> invoices = receiptsToInvoices(receipts);
 
         // If MB allows creating several invoices at once,
         // then convert "invoices" to Flux<SalesInvoice> and do so.
+
+        return null;
     }
 
     private List<SalesInvoice> receiptsToInvoices(List<EtsyReceipt> receipts) {
@@ -46,6 +51,19 @@ public class InvoicerService implements IInvoicerService {
 
     private SalesInvoice receiptToInvoice(EtsyReceipt receipt) {
         SalesInvoice invoice = new SalesInvoice();
+
+        invoice.setInvoiceDate(receipt.getCreateIsoDate());
+        invoice.setCurrency(receipt.getTotalPrice().getCurrencyCode());
+        // round?
+        invoice.setDiscount((double) receipt.getDiscountAmt().getAmount()
+                / receipt.getSubtotal().getAmount());
+
+        SalesInvoice.DetailsAttributes attributes =
+                new SalesInvoice.DetailsAttributes();
+        /*attributes.setPrice(receipt.getTotalPrice().getAmount());
+        invoice.getDetailsAttributes()
+                .add()*/
+
 
         return invoice;
     }

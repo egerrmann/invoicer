@@ -27,6 +27,17 @@ public class SalesInvoice {
     private String invoiceSequenceId;
     private String invoiceDate;
     private Integer firstDueInterval;
+
+    @JsonProperty("first_due_interval")
+    public Integer getFirstDueInterval() {
+        return firstDueInterval;
+    }
+
+    @JsonProperty("due_date")
+    public void setFirstDueInterval(Integer firstDueInterval) {
+        this.firstDueInterval = firstDueInterval;
+    }
+
     private String currency;
     private Boolean piecesAreInclTax;
     private String paymentConditions;
