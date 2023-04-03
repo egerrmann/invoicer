@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -35,9 +37,11 @@ public class EtsyReceipt {
     private Boolean isShipped;
     private Long createTimestamp;
 
-    public String getCreateIsoDate() {
-        return LocalDate.ofEpochDay(createTimestamp / 86400000L)
-                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+    // The method returns "createTimestamp" in a format of ISO
+    // This method puts ell the time to UTC Timezone
+    public String getCreateIsoTimeDate() {
+        LocalDateTime date =  LocalDateTime.ofEpochSecond(createTimestamp, 0, ZoneOffset.UTC);
+        return date.toString();
     }
 
     private Long createdTimestamp;
@@ -51,11 +55,11 @@ public class EtsyReceipt {
     private EtsyPrice grandtotal;
 
     // a number equal to the total_price minus coupon
-    // discounts. Does not included tax or shipping costs
+    // discounts. Does not include tax or shipping costs
     private EtsyPrice subtotal;
 
     // a number equal to the sum of the individual listings'
-    // (price * quantity). Does not included tax or shipping costs
+    // (price * quantity). Does not include tax or shipping costs
     private EtsyPrice totalPrice;
 
     private EtsyPrice totalShippingCost;

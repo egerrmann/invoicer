@@ -1,10 +1,7 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.moneybird.*;
-import com.example.demo.services.interfaces.IMoneybirdContactService;
-import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
-import com.example.demo.services.interfaces.IMoneybirdLedgerAccountService;
-import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
+import com.example.demo.services.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +18,13 @@ public class MoneybirdController {
     private IMoneybirdContactService contactService;
     private final IMoneybirdTaxRatesService taxRatesService;
     private final IMoneybirdLedgerAccountService ledgerAccountService;
+    private final IInvoicerService invoicerService;
 
     public MoneybirdController(IMoneybirdTaxRatesService taxRatesService,
-                               IMoneybirdLedgerAccountService ledgerAccountService) {
+                               IMoneybirdLedgerAccountService ledgerAccountService, IInvoicerService invoicerService) {
         this.taxRatesService = taxRatesService;
         this.ledgerAccountService = ledgerAccountService;
+        this.invoicerService = invoicerService;
     }
 
     @GetMapping("/invoices")
@@ -149,6 +148,17 @@ public class MoneybirdController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/add-invoices")
+    public ResponseEntity<Flux<SalesInvoice>> addAllInvoices() {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(invoicerService.createInvoices());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Flux.error(ex));
         }
     }
 

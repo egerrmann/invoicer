@@ -64,4 +64,14 @@ public class MoneybirdContact {
     public Optional<String> getOptionalCompanyName() {
         return Optional.ofNullable(companyName);
     }
+
+    // Sets the first and last names of the contact from their full name.
+    // If the full name has more than two words:
+    // first name --> all words except the last word,
+    // last name --> the last word from a full name.
+    public void setFirstAndLastName(String fullName) {
+        fullName = fullName.trim();
+        this.firstname = fullName.substring(0, fullName.lastIndexOf(" ")).trim();
+        this.lastname = fullName.substring(fullName.lastIndexOf(" ")).trim();
+    }
 }

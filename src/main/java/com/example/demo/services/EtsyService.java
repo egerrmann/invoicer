@@ -97,7 +97,7 @@ public class EtsyService implements IEtsyService {
                     throw new RuntimeException();
                 })
                 .bodyToMono(GetEtsyList.class);
-        resp.subscribe(System.out::println,error -> {
+        resp.subscribe(null,error -> {
             System.out.println(error.getLocalizedMessage());
         });
         List<EtsyLedger> ledgers = (List<EtsyLedger>) resp.block().getResults();
