@@ -49,18 +49,17 @@ public class MoneybirdContact {
     // some fields are not added
 
 
-    // decide if we need these methods (most likely not as etsy
-    // provides only a company name, not name with surname)
-    /*public String getFullName() {
+    public String getFullName() {
         if (firstname == null || lastname == null)
             return null;
         return firstname + lastname;
-    }*/
+    }
 
-    /*public Optional<String> getOptionalFullName() {
+    public Optional<String> getOptionalFullName() {
         return Optional.ofNullable(getFullName());
-    }*/
+    }
 
+    // TODO: discuss if Etsy provides company names for customers
     public Optional<String> getOptionalCompanyName() {
         return Optional.ofNullable(companyName);
     }

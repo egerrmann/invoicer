@@ -28,12 +28,12 @@ public class SalesInvoice {
     private String invoiceDate;
     private Integer firstDueInterval;
 
-    @JsonProperty("first_due_interval")
+    @JsonProperty("due_date")
     public Integer getFirstDueInterval() {
         return firstDueInterval;
     }
 
-    @JsonProperty("due_date")
+    @JsonProperty("first_due_interval")
     public void setFirstDueInterval(Integer firstDueInterval) {
         this.firstDueInterval = firstDueInterval;
     }

@@ -1,8 +1,9 @@
 package com.example.demo.services.interfaces;
 
 import com.example.demo.models.moneybird.SalesInvoice;
-import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 public interface IInvoicerService {
-    Flux<SalesInvoice> createInvoices();
+    List<SalesInvoice> createInvoices();
 }

@@ -151,17 +151,6 @@ public class MoneybirdController {
         }
     }
 
-    @GetMapping("/add-invoices")
-    public ResponseEntity<Flux<SalesInvoice>> addAllInvoices() {
-        try {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(invoicerService.createInvoices());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Flux.error(ex));
-        }
-    }
-
     @Autowired
     private void setInvoiceService(IMoneybirdInvoiceService invoiceService) {
         this.invoiceService = invoiceService;

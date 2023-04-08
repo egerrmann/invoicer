@@ -14,4 +14,11 @@ public class EtsyReceiptTest {
 
         assertEquals("2023-03-03T12:00:01", receipt.getCreateIsoTimeDate());
     }
+
+    @Test
+    public void timestampToIsoDate() {
+        Long timestamp = 1677844801L;
+
+        assertEquals("2023-03-03", EtsyReceipt.timestampToIsoDate(timestamp));
+    }
 }

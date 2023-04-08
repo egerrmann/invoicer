@@ -71,6 +71,12 @@ public class EtsyReceipt {
     private List<EtsyTransaction> transactions;
     private List<Refund> refunds;
 
+    // TODO: move to the Etsy service class if needed
+    public static String timestampToIsoDate(Long timestamp) {
+        return LocalDate.ofEpochDay(timestamp / 86400L)
+                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
     @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Refund {
