@@ -69,7 +69,8 @@ public class InvoicerService implements IInvoicerService {
     private void setContactIdForInvoice(SalesInvoice invoice,
                                         EtsyReceipt receipt) {
         MoneybirdContact contact = contactFromReceipt(receipt);
-        if (contactService.getContactId(contact) != null) {
+        String contactId = contactService.getContactId(contact);
+        if (contactId != null && !contactId.equals("")) {
             contact.setId(new BigInteger(contactService.getContactId(contact)));
         } else {
             Mono<MoneybirdContact> resp = contactService.createContact(contact);

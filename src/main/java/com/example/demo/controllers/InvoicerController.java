@@ -20,8 +20,6 @@ public class InvoicerController {
         this.service = service;
     }
 
-    // TODO: figure out why shop and user fields are null after invoking
-    //  this method right after executing the application
     @GetMapping("/add-invoices")
     public ResponseEntity<List<SalesInvoice>> addAllInvoices() {
         try {

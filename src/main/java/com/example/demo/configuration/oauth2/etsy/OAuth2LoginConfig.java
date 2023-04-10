@@ -54,7 +54,7 @@ public class OAuth2LoginConfig {
                 .authorizeHttpRequests(authorize -> {
                         try {
                             authorize
-                                    .requestMatchers("/etsy/**").authenticated()
+                                    .requestMatchers("/etsy/**", "/invoicer/**").authenticated()
                                     // TODO: May come up with more strict rules for people accessing other URLs
                                     .anyRequest().permitAll()
                                     .and()
