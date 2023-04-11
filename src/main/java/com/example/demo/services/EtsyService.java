@@ -46,15 +46,21 @@ public class EtsyService implements IEtsyService {
                 .uri(uriBuilder -> uriBuilder
                         .path("shops/{shopId}/receipts")
                         // these params will let us receive the needed receipts
-                        .queryParam("limit", 52)
-                        .queryParam("min_created", 1680135726)
-                        .queryParam("max_created", 1680911946)
+//                        .queryParam("limit", 50)
+                        .queryParam("limit", 4)
+                        .queryParam("min_created", 1677628800)
+                        .queryParam("max_created", 1680307199)
                         .build(shop.getShopId()))
-                .exchangeToMono(response -> {
-                    if (response.statusCode().equals(HttpStatus.OK))
-                        return response.bodyToMono(GetReceiptList.class);
-                    else return response.createError();
-                });
+                        .exchangeToMono(response -> {
+                            if (response.statusCode().equals(HttpStatus.OK))
+                                return response.bodyToMono(GetReceiptList.class);
+//                            else if (response.statusCode().isError()) {
+//                                response.bodyToMono(String.class)
+//                                        .subscribe(System.out::println);
+//                                return null;
+//                            }
+                            else return response.createError();
+                        });
     }
 
     @Override
@@ -113,6 +119,9 @@ public class EtsyService implements IEtsyService {
     public void onApplicationEvent(AccessTokenReceivedEvent event) {
         this.user = event.getUser();
         this.shop = event.getShop();
+
+        // TODO: check if there are any security concerns
+        //  when the WebClient buffer is manually increased
 
         // increase a buffer size in order to
         // process a big amount of receipts from Etsy
