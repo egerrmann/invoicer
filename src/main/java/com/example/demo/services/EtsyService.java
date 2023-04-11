@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,7 +45,10 @@ public class EtsyService implements IEtsyService {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("shops/{shopId}/receipts")
-                        .queryParam("limit", 1)
+                        // these params will let us receive the needed receipts
+                        .queryParam("limit", 52)
+                        .queryParam("min_created", 1680135726)
+                        .queryParam("max_created", 1680911946)
                         .build(shop.getShopId()))
                 .exchangeToMono(response -> {
                     if (response.statusCode().equals(HttpStatus.OK))
@@ -109,7 +113,16 @@ public class EtsyService implements IEtsyService {
     public void onApplicationEvent(AccessTokenReceivedEvent event) {
         this.user = event.getUser();
         this.shop = event.getShop();
+
+        // increase a buffer size in order to
+        // process a big amount of receipts from Etsy
+        final int size = 16 * 1024 * 1024;
+        final ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
+                .build();
+
         this.webClient = WebClient.builder()
+                .exchangeStrategies(strategies)
                 .defaultHeader("x-api-key", properties.getRegistration().getEtsy().getClientId())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + event.getUser().getAccessToken())

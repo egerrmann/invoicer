@@ -86,7 +86,7 @@ public class InvoicerService implements IInvoicerService {
     private void setDiscountForInvoice(SalesInvoice invoice,
                                        EtsyReceipt receipt) {
         double discount = receipt.getDiscountAmt().getAmount();
-        double subtotal = receipt.getSubtotal().getAmount();
+        double subtotal = receipt.getTotalPrice().getAmount();
         double percentDiscount = discount / subtotal * 100;
 
         DecimalFormat df = new DecimalFormat("#.##");
