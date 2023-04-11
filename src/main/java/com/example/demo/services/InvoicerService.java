@@ -41,6 +41,7 @@ public class InvoicerService implements IInvoicerService {
             SalesInvoice createdInvoice = invoiceService
                     .createInvoice(invoiceFromReceipt)
                     .block();
+            System.out.println(createdInvoice.getInvoiceDate());
             invoices.add(createdInvoice);
         }
         return invoices;
@@ -132,8 +133,10 @@ public class InvoicerService implements IInvoicerService {
         for (EtsyTransaction transaction : receipt.getTransactions()) {
             SalesInvoice.DetailsAttributes attr =
                     new SalesInvoice.DetailsAttributes();
-            assert taxRate != null;
-            attr.setTaxRateId(new BigInteger(taxRate.getId()));
+
+            if (taxRate != null)
+                attr.setTaxRateId(new BigInteger(taxRate.getId()));
+
             attr.setDescription(transaction.getTitle());
             attr.setAmount(transaction.getQuantity().toString());
             attr.setPrice((double) transaction.getPrice().getAmount()
@@ -163,12 +166,20 @@ public class InvoicerService implements IInvoicerService {
     }
 
     private MoneybirdTaxRate getTaxRate(EtsyReceipt receipt) {
-        Iterable<MoneybirdTaxRate> taxRates = taxRatesService.getAllTaxRates().toIterable();
+        Iterable<MoneybirdTaxRate> taxRates = taxRatesService
+                .getAllTaxRates()
+                .toIterable();
 
-        double etsyTaxPercent = (double) receipt.getTotalTaxCost().getAmount() / receipt.getSubtotal().getAmount();
+        double tax = receipt.getTotalTaxCost().getAmount();
+        double subtotal = receipt.getSubtotal().getAmount();
+        double taxPercent = tax * 100 / subtotal;
+
+        DecimalFormat df = new DecimalFormat("#.##");
+        String formattedStringTax = df.format(taxPercent);
+        double formattedTax = Double.parseDouble(formattedStringTax);
 
         for (MoneybirdTaxRate rate : taxRates) {
-            if (Double.parseDouble(rate.getPercentage()) == etsyTaxPercent)
+            if (Double.parseDouble(rate.getPercentage()) == formattedTax)
                 return rate;
         }
 
