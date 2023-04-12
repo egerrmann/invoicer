@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

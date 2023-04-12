@@ -1,4 +1,4 @@
-package com.example.demo.models;
+package com.example.demo.models.moneybird;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -22,6 +22,17 @@ public class SalesInvoice {
     private String invoiceSequenceId;
     private String invoiceDate;
     private Integer firstDueInterval;
+
+    @JsonProperty("due_date")
+    public Integer getFirstDueInterval() {
+        return firstDueInterval;
+    }
+
+    @JsonProperty("first_due_interval")
+    public void setFirstDueInterval(Integer firstDueInterval) {
+        this.firstDueInterval = firstDueInterval;
+    }
+
     private String currency;
     private Boolean piecesAreInclTax;
     private String paymentConditions;

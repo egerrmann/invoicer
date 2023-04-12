@@ -1,14 +1,12 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.MoneybirdContact;
-import com.example.demo.models.MoneybirdInvoiceRequest;
-import com.example.demo.models.SalesInvoice;
-import com.example.demo.services.interfaces.IMoneybirdContactService;
-import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import lombok.Getter;
 import lombok.Setter;
+import com.example.demo.models.moneybird.*;
+import com.example.demo.services.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,11 +21,16 @@ public class MoneybirdController {
     @Getter
     @Setter
     private IMoneybirdContactService contactService;
+    private IMoneybirdTaxRatesService taxRatesService;
+    private IMoneybirdLedgerAccountService ledgerAccountService;
+    private IInvoicerService invoicerService;
 
-    @Autowired
-    public MoneybirdController(IMoneybirdInvoiceService invoiceService, IMoneybirdContactService contactService) {
-        this.invoiceService = invoiceService;
-        this.contactService = contactService;
+    public MoneybirdController(IMoneybirdTaxRatesService taxRatesService,
+                               IMoneybirdLedgerAccountService ledgerAccountService,
+                               IInvoicerService invoicerService) {
+        this.taxRatesService = taxRatesService;
+        this.ledgerAccountService = ledgerAccountService;
+        this.invoicerService = invoicerService;
     }
 
     public MoneybirdController() {}
@@ -38,7 +41,8 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(invoiceService.getAllInvoices());
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Flux.error(ex));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Flux.error(ex));
         }
     }
 
@@ -49,16 +53,15 @@ public class MoneybirdController {
         try {
             SalesInvoice invoice = invoiceRequest.getInvoice();
 
-            BigInteger contactId = contactService
-                    .createContact(invoiceRequest.getContact())
-                    .block()
-                    .getId();
-            invoice.setContactId(contactId);
+            String contactId = createContact(invoiceRequest.getContact())
+                    .getBody();
+            invoice.setContactId(new BigInteger(contactId));
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(invoiceService.createInvoice(invoice));
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Mono.error(ex));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Mono.error(ex));
         }
     }
 
@@ -68,7 +71,8 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(contactService.getAllContacts());
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Flux.error(ex));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Flux.error(ex));
         }
     }
 
@@ -80,7 +84,8 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.OK)
                 .body(contactService.getContactById(id));
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Mono.error(ex));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Mono.error(ex));
         }
     }
 
@@ -104,7 +109,52 @@ public class MoneybirdController {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(id);
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/tax-rates")
+    public ResponseEntity<Flux<MoneybirdTaxRate>> getAllTaxes() {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taxRatesService.getAllTaxRates());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Flux.error(ex));
+        }
+    }
+
+    @GetMapping("/ledgers")
+    public ResponseEntity<Flux<MoneybirdLedgerAccount>> getAllLedgers() {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ledgerAccountService.getAllLedgers());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Flux.error(ex));
+        }
+    }
+
+    @PostMapping("/ledgers")
+    public ResponseEntity<String> createLedger(
+            @RequestBody MoneybirdLedgerAccount ledger) {
+
+        try {
+            String id = ledgerAccountService.getLedgerId(ledger);
+            if (id == null) {
+                id = ledgerAccountService.createLedger(ledger)
+                        .block()
+                        .getId();
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .body(id);
+            }
+            else
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(id);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
         }
     }
 }

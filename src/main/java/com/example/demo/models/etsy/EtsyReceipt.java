@@ -2,7 +2,7 @@ package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.*;
+import lombok.Data;
 
 import java.util.List;
 
@@ -37,9 +37,19 @@ public class EtsyReceipt {
     private Long updatedTimestamp;
     private Boolean isGift;
     private String giftMessage;
+
+    // a number equal to the total_price minus
+    // the coupon discount plus tax and shipping costs
     private EtsyPrice grandtotal;
+
+    // a number equal to the total_price minus coupon
+    // discounts. Does not include tax or shipping costs
     private EtsyPrice subtotal;
+
+    // a number equal to the sum of the individual listings'
+    // (price * quantity). Does not include tax or shipping costs
     private EtsyPrice totalPrice;
+
     private EtsyPrice totalShippingCost;
     private EtsyPrice totalTaxCost;
     private EtsyPrice totalVatCost;

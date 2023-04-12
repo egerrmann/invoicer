@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.SalesInvoice;
+import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import org.junit.jupiter.api.BeforeEach;
