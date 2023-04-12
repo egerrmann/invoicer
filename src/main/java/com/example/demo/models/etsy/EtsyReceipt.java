@@ -2,12 +2,8 @@ package com.example.demo.models.etsy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.*;
+import lombok.Data;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Data
@@ -36,14 +32,6 @@ public class EtsyReceipt {
     private Boolean isPaid;
     private Boolean isShipped;
     private Long createTimestamp;
-
-    // The method returns "createTimestamp" in a format of ISO
-    // This method puts ell the time to UTC Timezone
-    public String getCreateIsoTimeDate() {
-        LocalDateTime date =  LocalDateTime.ofEpochSecond(createTimestamp, 0, ZoneOffset.UTC);
-        return date.toString();
-    }
-
     private Long createdTimestamp;
     private Long updateTimestamp;
     private Long updatedTimestamp;
@@ -70,12 +58,6 @@ public class EtsyReceipt {
     private List<EtsyShipment> shipments;
     private List<EtsyTransaction> transactions;
     private List<Refund> refunds;
-
-    // TODO: move to the Etsy service class if needed
-    public static String timestampToIsoDate(Long timestamp) {
-        return LocalDate.ofEpochDay(timestamp / 86400L)
-                .format(DateTimeFormatter.ISO_LOCAL_DATE);
-    }
 
     @Data
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

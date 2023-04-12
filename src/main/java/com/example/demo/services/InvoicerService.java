@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +55,7 @@ public class InvoicerService implements IInvoicerService {
         setContactIdForInvoice(invoice, receipt);
 
         Long createTimestamp = receipt.getCreateTimestamp();
-        String createDate = EtsyReceipt.timestampToIsoDate(createTimestamp);
+        String createDate = timestampToIsoDate(createTimestamp);
         invoice.setInvoiceDate(createDate);
 
         String currencyCode = receipt.getTotalPrice().getCurrencyCode();
@@ -184,5 +186,10 @@ public class InvoicerService implements IInvoicerService {
         }
 
         return null;
+    }
+
+    private String timestampToIsoDate(Long timestamp) {
+        return LocalDate.ofEpochDay(timestamp / 86400L)
+                .format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 }

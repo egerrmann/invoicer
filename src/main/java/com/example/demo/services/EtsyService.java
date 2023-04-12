@@ -51,16 +51,16 @@ public class EtsyService implements IEtsyService {
                         .queryParam("min_created", 1677628800)
                         .queryParam("max_created", 1680307199)
                         .build(shop.getShopId()))
-                        .exchangeToMono(response -> {
-                            if (response.statusCode().equals(HttpStatus.OK))
-                                return response.bodyToMono(GetReceiptList.class);
+                .exchangeToMono(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToMono(GetReceiptList.class);
 //                            else if (response.statusCode().isError()) {
 //                                response.bodyToMono(String.class)
 //                                        .subscribe(System.out::println);
 //                                return null;
 //                            }
-                            else return response.createError();
-                        });
+                    else return response.createError();
+                });
     }
 
     @Override
