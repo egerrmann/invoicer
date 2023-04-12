@@ -4,6 +4,7 @@ import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.services.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.*;
@@ -32,19 +33,41 @@ public class OAuth2LoginConfig {
         this.userService = userService;
     }
 
-    @Bean
-//    @Order(1)
+    @Bean("etsyFilterChain")
+//    @Order(2)
     public SecurityFilterChain etsyFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/etsy/**").authenticated()
-                        // TODO: May come up with more strict rules for people accessing other URLs
-                        .anyRequest().permitAll()
+                .authorizeHttpRequests(authorize -> {
+                            try {
+                                authorize
+                                        .requestMatchers("/moneybird/**")
+                                        .permitAll()
+                                        .and()
+                                        // TODO: Make POST methods work without disabling "csrf"
+                                        .csrf()
+                                        .disable();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                 )
-                .oauth2Login()
-                // TODO Add refresh token catcher
-                .userInfoEndpoint()
-                .userService(this.userService);
+                .authorizeHttpRequests(authorize -> {
+                        try {
+                            authorize
+                                    .requestMatchers("/etsy/**", "/invoicer/**").authenticated()
+                                    // TODO: May come up with more strict rules for people accessing other URLs
+                                    .anyRequest().permitAll()
+                                    .and()
+                                    .oauth2Login()
+                                    // TODO Add refresh token catcher
+                                    .userInfoEndpoint()
+                                    .userService(this.userService);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                );
+
 
         return http.build();
     }

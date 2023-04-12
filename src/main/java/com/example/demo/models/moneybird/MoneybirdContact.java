@@ -1,4 +1,4 @@
-package com.example.demo.models;
+package com.example.demo.models.moneybird;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -48,6 +48,7 @@ public class MoneybirdContact {
     private Boolean directDebit;
     // some fields are not added
 
+
     public String getFullName() {
         if (firstname == null || lastname == null)
             return null;
@@ -58,7 +59,18 @@ public class MoneybirdContact {
         return Optional.ofNullable(getFullName());
     }
 
+    // TODO: discuss if Etsy provides company names for customers
     public Optional<String> getOptionalCompanyName() {
         return Optional.ofNullable(companyName);
+    }
+
+    // Sets the first and last names of the contact from their full name.
+    // If the full name has more than two words:
+    // first name --> all words except the last word,
+    // last name --> the last word from a full name.
+    public void setFirstAndLastName(String fullName) {
+        fullName = fullName.trim();
+        this.firstname = fullName.substring(0, fullName.lastIndexOf(" ")).trim();
+        this.lastname = fullName.substring(fullName.lastIndexOf(" ")).trim();
     }
 }

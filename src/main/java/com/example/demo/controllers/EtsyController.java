@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/etsy")
 public class EtsyController {
@@ -23,10 +25,9 @@ public class EtsyController {
     }
 
     @GetMapping("/receipts")
-    public ResponseEntity<Flux<EtsyReceipt>> getReceipts() {
-        Flux<EtsyReceipt> resp = authService.getReceipts();
+    public ResponseEntity<List<EtsyReceipt>> getReceipts() {
+        List<EtsyReceipt> resp = authService.getReceiptsList();
         return ResponseEntity.status(HttpStatus.OK).body(resp);
-//        return resp;
     }
 
     @GetMapping("/ledgers")

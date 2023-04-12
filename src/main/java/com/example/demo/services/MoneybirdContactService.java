@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.MoneybirdContact;
+import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -8,10 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;

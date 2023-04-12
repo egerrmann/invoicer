@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.SalesInvoice;
+import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;

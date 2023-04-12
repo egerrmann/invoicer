@@ -6,21 +6,22 @@ import com.example.demo.models.etsy.EtsyShop;
 import com.example.demo.models.etsy.oauth2.AccessTokenReceivedEvent;
 import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
-import com.example.demo.models.etsy.responses.GetEtsyList;
+import com.example.demo.models.etsy.responses.GetLedgerList;
+import com.example.demo.models.etsy.responses.GetReceiptList;
 import com.example.demo.services.interfaces.IEtsyService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import java.util.List;
-
-import static java.lang.Float.NaN;
 
 @Service
 public class EtsyService implements IEtsyService {
@@ -40,24 +41,33 @@ public class EtsyService implements IEtsyService {
     }
 
     @Override
-    public Flux<EtsyReceipt> getReceipts() {
-        Mono<GetEtsyList> resp = webClient
-                .get()
+    public Mono<GetReceiptList> getReceipts() {
+        return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        // For some reason WebClient throws an error
-                        // if in uriBuilder in path() you have "https://",
-                        // so I moved it to the base url, and it worked
                         .path("shops/{shopId}/receipts")
-                        .queryParam("limit", 1)
+                        // these params will let us receive the needed receipts
+                        .queryParam("limit", 50)
+//                        .queryParam("limit", 4)
+                        .queryParam("min_created", 1677628800)
+                        .queryParam("max_created", 1680307199)
                         .build(shop.getShopId()))
-                .retrieve()
-                .bodyToMono(GetEtsyList.class);
-        resp.subscribe(System.out::println,error -> {
-            System.out.println(error.toString());
-        });
-        List<EtsyReceipt> receipts = (List<EtsyReceipt>) resp.block().getResults();
-        Flux<EtsyReceipt> fluxReceipts = Flux.fromIterable(receipts);
-        return fluxReceipts;
+                .exchangeToMono(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToMono(GetReceiptList.class);
+//                            else if (response.statusCode().isError()) {
+//                                response.bodyToMono(String.class)
+//                                        .subscribe(System.out::println);
+//                                return null;
+//                            }
+                    else return response.createError();
+                });
+    }
+
+    @Override
+    public List<EtsyReceipt> getReceiptsList() {
+        return getReceipts()
+                .block()
+                .getResults();
     }
 
     @Override
@@ -77,7 +87,7 @@ public class EtsyService implements IEtsyService {
         Date today = new Date();
         Long monthAgo = today.getTime() - 2678400;
 
-        Mono<GetEtsyList> resp = webClient
+        Mono<GetLedgerList> resp = webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("shops/{shopId}/payment-account/ledger-entries")
@@ -96,11 +106,11 @@ public class EtsyService implements IEtsyService {
 
                     throw new RuntimeException();
                 })
-                .bodyToMono(GetEtsyList.class);
-        resp.subscribe(System.out::println,error -> {
+                .bodyToMono(GetLedgerList.class);
+        resp.subscribe(null,error -> {
             System.out.println(error.getLocalizedMessage());
         });
-        List<EtsyLedger> ledgers = (List<EtsyLedger>) resp.block().getResults();
+        List<EtsyLedger> ledgers = resp.block().getResults();
         Flux<EtsyLedger> fluxLedgers = Flux.fromIterable(ledgers);
         return fluxLedgers;
     }
@@ -109,7 +119,19 @@ public class EtsyService implements IEtsyService {
     public void onApplicationEvent(AccessTokenReceivedEvent event) {
         this.user = event.getUser();
         this.shop = event.getShop();
+
+        // TODO: check if there are any security concerns
+        //  when the WebClient buffer is manually increased
+
+        // increase a buffer size in order to
+        // process a big amount of receipts from Etsy
+        final int size = 16 * 1024 * 1024;
+        final ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
+                .build();
+
         this.webClient = WebClient.builder()
+                .exchangeStrategies(strategies)
                 .defaultHeader("x-api-key", properties.getRegistration().getEtsy().getClientId())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + event.getUser().getAccessToken())
