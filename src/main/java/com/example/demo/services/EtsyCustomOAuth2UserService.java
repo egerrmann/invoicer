@@ -2,7 +2,7 @@ package com.example.demo.services;
 
 import com.example.demo.models.etsy.EtsyShop;
 import com.example.demo.models.etsy.oauth2.AccessTokenReceivedEvent;
-import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
+import com.example.demo.models.etsy.oauth2.OAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetMeResponse;
 import org.javatuples.Pair;
@@ -24,19 +24,19 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class EtsyCustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     // This class intercepts Spring's oauth2 login and does it in a custom way.
     // More in detail, it gets the information about the User and their Shop,
     // logs in the user and keeps the information of both the user and the shop
 
-    private EtsyOAuthProperties properties;
+    private OAuthProperties properties;
     private ApplicationEventPublisher publisher;
 
     @Value("${etsy.base-url}")
     private String baseUrl;
 
-    public CustomOAuth2UserService(EtsyOAuthProperties properties, ApplicationEventPublisher publisher) {
+    public EtsyCustomOAuth2UserService(OAuthProperties properties, ApplicationEventPublisher publisher) {
         this.properties = properties;
         this.publisher = publisher;
     }

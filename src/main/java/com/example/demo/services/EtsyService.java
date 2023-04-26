@@ -4,7 +4,7 @@ import com.example.demo.models.etsy.EtsyLedger;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.models.etsy.EtsyShop;
 import com.example.demo.models.etsy.oauth2.AccessTokenReceivedEvent;
-import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
+import com.example.demo.models.etsy.oauth2.OAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetLedgerList;
 import com.example.demo.models.etsy.responses.GetReceiptList;
@@ -27,14 +27,14 @@ import java.util.List;
 public class EtsyService implements IEtsyService {
 
     private WebClient webClient;
-    private final EtsyOAuthProperties properties;
+    private final OAuthProperties properties;
     private EtsyUser user;
     private EtsyShop shop;
 
     @Value("${etsy.base-url}")
     private String baseUrl;
 
-    public EtsyService(EtsyOAuthProperties properties, EtsyUser user) {
+    public EtsyService(OAuthProperties properties, EtsyUser user) {
         this.properties = properties;
         this.webClient = WebClient.create();
         this.user = user;
@@ -124,7 +124,7 @@ public class EtsyService implements IEtsyService {
         //  when the WebClient buffer is manually increased
 
         // increase a buffer size in order to
-        // process a big amount of receipts from Etsy
+        // process a large number of receipts from Etsy
         final int size = 16 * 1024 * 1024;
         final ExchangeStrategies strategies = ExchangeStrategies.builder()
                 .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))

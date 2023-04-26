@@ -1,6 +1,6 @@
 package com.example.demo.models.etsy;
 
-import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
+import com.example.demo.models.etsy.oauth2.OAuthProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -11,9 +11,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class EtsyWebClient {
     private WebClient webclient;
     private String accessToken;
-    private EtsyOAuthProperties properties;
+    private OAuthProperties properties;
 
-    public EtsyWebClient(EtsyOAuthProperties properties) {
+    public EtsyWebClient(OAuthProperties properties) {
         this.properties = properties;
         this.webclient = WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

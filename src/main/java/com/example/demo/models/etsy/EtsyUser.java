@@ -12,7 +12,7 @@ import java.util.Map;
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EtsyUser {
-    private int userId;
+    private Integer userId;
     private String primaryEmail;
     private String firstName;
     private String lastName;

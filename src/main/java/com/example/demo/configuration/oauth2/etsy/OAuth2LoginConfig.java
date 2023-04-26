@@ -1,10 +1,12 @@
 package com.example.demo.configuration.oauth2.etsy;
 
-import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
-import com.example.demo.services.CustomOAuth2UserService;
+import com.example.demo.models.etsy.oauth2.OAuthProperties;
+import com.example.demo.models.etsy.oauth2.ProviderIdProperties;
+import com.example.demo.models.etsy.oauth2.RegistrationIdProperties;
+import com.example.demo.services.MoneybirdCustomOAuth2UserService;
+import com.example.demo.services.EtsyCustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.*;
@@ -16,8 +18,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -25,12 +25,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class OAuth2LoginConfig {
 
-    private final EtsyOAuthProperties properties;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> userService;
+    private final OAuthProperties properties;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> etsyUserService;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> moneybirdUserService;
 
-    public OAuth2LoginConfig(EtsyOAuthProperties properties, CustomOAuth2UserService userService) {
+    public OAuth2LoginConfig(OAuthProperties properties,
+                             EtsyCustomOAuth2UserService etsyUserService,
+                             MoneybirdCustomOAuth2UserService moneybirdUserService) {
         this.properties = properties;
-        this.userService = userService;
+        this.etsyUserService = etsyUserService;
+        this.moneybirdUserService = moneybirdUserService;
     }
 
     @Bean("etsyFilterChain")
@@ -40,12 +44,14 @@ public class OAuth2LoginConfig {
                 .authorizeHttpRequests(authorize -> {
                             try {
                                 authorize
-                                        .requestMatchers("/moneybird/**")
-                                        .permitAll()
+                                        .requestMatchers("/moneybird/**").authenticated()
                                         .and()
                                         // TODO: Make POST methods work without disabling "csrf"
                                         .csrf()
-                                        .disable();
+                                        .disable()
+                                        .oauth2Login()
+                                        .userInfoEndpoint()
+                                        .userService(this.moneybirdUserService);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -56,12 +62,15 @@ public class OAuth2LoginConfig {
                             authorize
                                     .requestMatchers("/etsy/**", "/invoicer/**").authenticated()
                                     // TODO: May come up with more strict rules for people accessing other URLs
-                                    .anyRequest().permitAll()
-                                    .and()
-                                    .oauth2Login()
+                                    .anyRequest().permitAll();
+                                    // next lines are commented because for some reason Etsy's
+                                    // auth service is used even during the MB's authorization
+                                    // TODO: Uncomment lines and make code work with both auths
+//                                    .and()
+//                                    .oauth2Login()
                                     // TODO Add refresh token catcher
-                                    .userInfoEndpoint()
-                                    .userService(this.userService);
+//                                    .userInfoEndpoint()
+//                                    .userService(this.etsyUserService);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -72,15 +81,35 @@ public class OAuth2LoginConfig {
         return http.build();
     }
 
+    // TODO: code duplication
     private ClientRegistration etsyClientRegistration() {
+        RegistrationIdProperties etsyRegistrationProp = properties.getRegistration().getEtsy();
+        ProviderIdProperties moneybirdProviderProp = properties.getProvider().getEtsy();
+
         return ClientRegistration.withRegistrationId("etsy")
-                .clientId(properties.getRegistration().getEtsy().getClientId())
-                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri(properties.getRegistration().getEtsy().getRedirectUri())
-                .scope(properties.getRegistration().getEtsy().getScope())
-                .authorizationUri(properties.getProvider().getEtsy().getAuthorizationUri())
-                .tokenUri(properties.getProvider().getEtsy().getTokenUri())
+                .clientId(etsyRegistrationProp.getClientId())
+                .clientAuthenticationMethod(etsyRegistrationProp.getClientAuthenticationMethod())
+                .authorizationGrantType(etsyRegistrationProp.getAuthorizationGrantType())
+                .redirectUri(etsyRegistrationProp.getRedirectUri())
+                .scope(etsyRegistrationProp.getScope())
+                .authorizationUri(moneybirdProviderProp.getAuthorizationUri())
+                .tokenUri(moneybirdProviderProp.getTokenUri())
+                .build();
+    }
+
+    private ClientRegistration moneybirdClientRegistration() {
+        RegistrationIdProperties moneybirdRegistrationProp = properties.getRegistration().getMoneybird();
+        ProviderIdProperties etsyProviderProp = properties.getProvider().getMoneybird();
+
+        return ClientRegistration.withRegistrationId("moneybird")
+                .clientId(moneybirdRegistrationProp.getClientId())
+                .clientSecret(moneybirdRegistrationProp.getClientSecret())
+                .clientAuthenticationMethod(moneybirdRegistrationProp.getClientAuthenticationMethod())
+                .authorizationGrantType(moneybirdRegistrationProp.getAuthorizationGrantType())
+                .redirectUri(moneybirdRegistrationProp.getRedirectUri())
+                .scope(moneybirdRegistrationProp.getScope())
+                .authorizationUri(etsyProviderProp.getAuthorizationUri())
+                .tokenUri(etsyProviderProp.getTokenUri())
                 .build();
     }
 
@@ -100,14 +129,17 @@ public class OAuth2LoginConfig {
         return authorizedClientManager;
     }
 
-    @Bean
+    // seems like this bean is not used anywhere
+    /*@Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
-		return userService;
-    }
+        return etsyUserService;
+    }*/
 
+    // TODO: Check if auth works without the following beans. Delete if yes
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryClientRegistrationRepository(this.etsyClientRegistration());
+        return new InMemoryClientRegistrationRepository(this.etsyClientRegistration(),
+                this.moneybirdClientRegistration());
     }
 
     @Bean
