@@ -3,8 +3,8 @@ package com.example.demo.configuration.oauth2.etsy;
 import com.example.demo.models.etsy.oauth2.OAuthProperties;
 import com.example.demo.models.etsy.oauth2.ProviderIdProperties;
 import com.example.demo.models.etsy.oauth2.RegistrationIdProperties;
-import com.example.demo.services.MoneybirdCustomOAuth2UserService;
-import com.example.demo.services.EtsyCustomOAuth2UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,21 +21,14 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
+// TODO: Split this class into two different ones
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class OAuth2LoginConfig {
-
     private final OAuthProperties properties;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> etsyUserService;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> moneybirdUserService;
-
-    public OAuth2LoginConfig(OAuthProperties properties,
-                             EtsyCustomOAuth2UserService etsyUserService,
-                             MoneybirdCustomOAuth2UserService moneybirdUserService) {
-        this.properties = properties;
-        this.etsyUserService = etsyUserService;
-        this.moneybirdUserService = moneybirdUserService;
-    }
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> etsyCustomOAuth2UserService;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> moneybirdCustomOAuth2UserService;
 
     @Bean("etsyFilterChain")
 //    @Order(2)
@@ -51,7 +44,7 @@ public class OAuth2LoginConfig {
                                         .disable()
                                         .oauth2Login()
                                         .userInfoEndpoint()
-                                        .userService(this.moneybirdUserService);
+                                        .userService(this.moneybirdCustomOAuth2UserService);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -103,6 +96,7 @@ public class OAuth2LoginConfig {
 
         return ClientRegistration.withRegistrationId("moneybird")
                 .clientId(moneybirdRegistrationProp.getClientId())
+                // TODO: Check if it's secure enough w/o PKCE
                 .clientSecret(moneybirdRegistrationProp.getClientSecret())
                 .clientAuthenticationMethod(moneybirdRegistrationProp.getClientAuthenticationMethod())
                 .authorizationGrantType(moneybirdRegistrationProp.getAuthorizationGrantType())

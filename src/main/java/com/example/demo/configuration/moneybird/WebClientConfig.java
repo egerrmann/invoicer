@@ -14,9 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 //@EnableWebSecurity
-public class WebClientConfigMB {
-    @Value("${moneybird.bearer-token}")
-    private String token;
+public class WebClientConfig {
     @Value("${moneybird.base-url}")
     private String baseUrl;
 
@@ -25,10 +23,20 @@ public class WebClientConfigMB {
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
     }
 
+    public WebClient webClientWithBaseUrl(String accessToken) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .build();
+    }
+
+    public void updateBaseUrl(String administrationId) {
+        baseUrl += "/" + administrationId;
+    }
 
     // TODO: Learn why two SecurityFilterChain classes don't work together
     // However, we could just create another Config class,
