@@ -1,11 +1,13 @@
 package com.example.demo.services;
 
 import com.example.demo.models.etsy.EtsyTransaction;
+import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -60,6 +62,7 @@ public class InvoicerService implements IInvoicerService {
 
         String currencyCode = receipt.getTotalPrice().getCurrencyCode();
         invoice.setCurrency(currencyCode);
+        invoice.setPiecesAreInclTax(true);
 
         setDiscountForInvoice(invoice, receipt);
 
@@ -125,12 +128,10 @@ public class InvoicerService implements IInvoicerService {
     // Create a list of Invoice Details Attributes according to receipt's transactions
     private List<SalesInvoice.DetailsAttributes> detailsAttributesFromReceipt(EtsyReceipt receipt) {
 
-        // Note: apparently, Moneybird's "DetailAttributes" is
-        // (almost) the same thing as Etsy's "Transactions"
-
         ArrayList<SalesInvoice.DetailsAttributes> attributes
                 = new ArrayList<>();
-        MoneybirdTaxRate taxRate = getTaxRate(receipt);
+        MoneybirdTaxRate taxRate = getMaxCountryTax(receipt.getCountryIso());
+//        MoneybirdTaxRate taxRate = getMaxTaxRate(receipt);
 
         for (EtsyTransaction transaction : receipt.getTransactions()) {
             SalesInvoice.DetailsAttributes attr =
@@ -167,9 +168,59 @@ public class InvoicerService implements IInvoicerService {
         return attributes;
     }
 
-    private MoneybirdTaxRate getTaxRate(EtsyReceipt receipt) {
+    // TODO we may consider getting TaxRates from MB only once
+    //  to make interactions with MB as little as possible
+    // Gets the largest tax rate
+    private MoneybirdTaxRate getMaxCountryTax(String countryIso) {
+        String shopIso = etsyService.getShopIso();
+        if (countryIso != null && !countryIso.equals(shopIso)) {
+            // Getting a Max TaxRate from for the specified country
+            Iterable<MoneybirdTaxRate> taxRates = taxRatesService
+                    .getAllTaxRates(countryIso)
+                    .toIterable();
+            if (taxRates.iterator().hasNext()) {
+                return getMaxTaxRate(taxRates, true);
+            } else {
+                throw new IncorrectDataException("The country with ISO '%s' doesn't exist in the Moneybird account".formatted(countryIso), HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        // Getting Max TaxRate for the country where the shop is located
+        // or for the case if the country is not specified.
+        // TODO check what to do in case the customer's country (from Etsy receipt) is not specified:
+        //  1. Should we take the TaxRate from the country of the shop? (which happens right now)
+        //  2. Or should we throw an exception?
+
         Iterable<MoneybirdTaxRate> taxRates = taxRatesService
                 .getAllTaxRates()
+                .toIterable();
+        return getMaxTaxRate(taxRates, false);
+    }
+
+    // Gets a max TaxRate form provided 'taxRates'.
+    // If 'isCountryKnown' is 'false' then the function returns a max standard TaxRate.
+    private MoneybirdTaxRate getMaxTaxRate(Iterable<MoneybirdTaxRate> taxRates, boolean isCountryKnown) {
+        double ratePercentage = 0;
+        MoneybirdTaxRate maxRate = null;
+
+        for (MoneybirdTaxRate rate : taxRates) {
+            if (!isCountryKnown && rate.getCountry() != null) {
+                continue;
+            }
+            double currentRatePerc = Double.parseDouble(rate.getPercentage());
+            if (ratePercentage < currentRatePerc) {
+                ratePercentage = currentRatePerc;
+                maxRate = rate;
+            }
+        }
+        return maxRate;
+    }
+
+    // Calculates the TaxRate from Etsy, finds the same TaxRate in MB,
+    // and returns it.
+    private MoneybirdTaxRate getEtsyTaxRate(EtsyReceipt receipt) {
+        Iterable<MoneybirdTaxRate> taxRates = taxRatesService
+                .getAllTaxRates(receipt.getCountryIso())
                 .toIterable();
 
         double tax = receipt.getTotalTaxCost().getAmount();

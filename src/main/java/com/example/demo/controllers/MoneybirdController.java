@@ -111,7 +111,7 @@ public class MoneybirdController {
     public ResponseEntity<Flux<MoneybirdTaxRate>> getAllTaxes() {
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(taxRatesService.getAllTaxRates());
+                    .body(taxRatesService.getAllTaxRates(""));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Flux.error(ex));

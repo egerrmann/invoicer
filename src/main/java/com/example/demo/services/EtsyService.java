@@ -46,8 +46,8 @@ public class EtsyService implements IEtsyService {
                 .uri(uriBuilder -> uriBuilder
                         .path("shops/{shopId}/receipts")
                         // these params will let us receive the needed receipts
-                        .queryParam("limit", 50)
-//                        .queryParam("limit", 4)
+//                        .queryParam("limit", 50)
+                        .queryParam("limit", 2)
                         .queryParam("min_created", 1677628800)
                         .queryParam("max_created", 1680307199)
                         .build(shop.getShopId()))
@@ -137,5 +137,10 @@ public class EtsyService implements IEtsyService {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + event.getUser().getAccessToken())
                 .baseUrl(baseUrl)
                 .build();
+    }
+
+    @Override
+    public String getShopIso() {
+        return shop.getShopLocationCountryIso();
     }
 }

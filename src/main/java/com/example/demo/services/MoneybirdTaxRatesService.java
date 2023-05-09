@@ -28,4 +28,24 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
                                 .cast(MoneybirdTaxRate.class);
                 });
     }
+
+    // This method returns tax rates filtered by country
+    @Override
+    public Flux<MoneybirdTaxRate> getAllTaxRates(String countryISO) {
+        return webClientWithBaseUrl.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/tax_rates")
+                        // In MB it there is only one query parameter called "filter", that contains all the filters, which can be separated with a coma
+                    .queryParam("filter", "country:" + countryISO)
+                    .build()
+                )
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK))
+                        return response.bodyToFlux(MoneybirdTaxRate.class);
+                    else
+                        return response.createError()
+                                .flux()
+                                .cast(MoneybirdTaxRate.class);
+                });
+    }
 }
