@@ -173,14 +173,22 @@ public class InvoicerService implements IInvoicerService {
     // Gets the largest tax rate
     private MoneybirdTaxRate getMaxCountryTax(String countryIso) {
         String shopIso = etsyService.getShopIso();
-        if (countryIso != null && !countryIso.equals(shopIso)) {
-            // Getting a Max TaxRate from for the specified country
+        if (countryIso != null) {
+            // Getting a Max TaxRate for the specified country
             Iterable<MoneybirdTaxRate> taxRates = taxRatesService
                     .getAllTaxRates(countryIso)
                     .toIterable();
             if (taxRates.iterator().hasNext()) {
+                // If there are any tax rates for the specified country,
+                // this method is invoked and the isCountryKnown parameter set to "true"
                 return getMaxTaxRate(taxRates, true);
-            } else {
+            } else if (!countryIso.equals(shopIso)){
+                // TODO check if the logic in the comment is right or maybe we should do something else, for example:
+                //  1. We could force users to create tax rates for their home-countries as well (then make sure that it is possible from the Moneybird side)
+                //  2. Or maybe this approach is incorrect, because the MB doesn't specify the 'country' for tax rates if the tax rate is from Netherlands? (Verify that as well)
+                // This 'else if' makes sure the error is not thrown, when the specified country is the shop's country.
+                // This allows in this case the function to continue and use "basic" tax rates for the home-country.
+                // By "basic" tax rates we mean the tax rates with no specified country.
                 throw new IncorrectDataException("The country with ISO '%s' doesn't exist in the Moneybird account".formatted(countryIso), HttpStatus.BAD_REQUEST);
             }
         }
