@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 
 public interface IMoneybirdTaxRatesService {
     Flux<MoneybirdTaxRate> getAllTaxRates();
-
     Flux<MoneybirdTaxRate> getAllTaxRates(String countryISO);
+    Flux<MoneybirdTaxRate> getDomesticTaxRates();
+    MoneybirdTaxRate getMaxCountryTax(String customerCountryIso);
 }

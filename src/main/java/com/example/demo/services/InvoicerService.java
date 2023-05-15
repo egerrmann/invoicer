@@ -9,6 +9,7 @@ import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
@@ -16,6 +17,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -76,7 +78,7 @@ public class InvoicerService implements IInvoicerService {
                                         EtsyReceipt receipt) {
         MoneybirdContact contact = contactFromReceipt(receipt);
         String contactId = contactService.getContactId(contact);
-        if (contactId != null && !contactId.equals("")) {
+        if (contactId != null && !contactId.isEmpty()) {
             contact.setId(new BigInteger(contactService.getContactId(contact)));
         } else {
             Mono<MoneybirdContact> resp = contactService.createContact(contact);
@@ -130,7 +132,7 @@ public class InvoicerService implements IInvoicerService {
 
         ArrayList<SalesInvoice.DetailsAttributes> attributes
                 = new ArrayList<>();
-        MoneybirdTaxRate taxRate = getMaxCountryTax(receipt.getCountryIso());
+        MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(receipt.getCountryIso());
 //        MoneybirdTaxRate taxRate = getMaxTaxRate(receipt);
 
         for (EtsyTransaction transaction : receipt.getTransactions()) {
@@ -166,62 +168,6 @@ public class InvoicerService implements IInvoicerService {
 
 
         return attributes;
-    }
-
-    // TODO we may consider getting TaxRates from MB only once
-    //  to make interactions with MB as little as possible
-    // Gets the largest tax rate
-    private MoneybirdTaxRate getMaxCountryTax(String countryIso) {
-        String shopIso = etsyService.getShopIso();
-        if (countryIso != null) {
-            // Getting a Max TaxRate for the specified country
-            Iterable<MoneybirdTaxRate> taxRates = taxRatesService
-                    .getAllTaxRates(countryIso)
-                    .toIterable();
-            if (taxRates.iterator().hasNext()) {
-                // If there are any tax rates for the specified country,
-                // this method is invoked and the isCountryKnown parameter set to "true"
-                return getMaxTaxRate(taxRates, true);
-            } else if (!countryIso.equals(shopIso)){
-                // TODO check if the logic in the comment is right or maybe we should do something else, for example:
-                //  1. We could force users to create tax rates for their home-countries as well (then make sure that it is possible from the Moneybird side)
-                //  2. Or maybe this approach is incorrect, because the MB doesn't specify the 'country' for tax rates if the tax rate is from Netherlands? (Verify that as well)
-                // This 'else if' makes sure the error is not thrown, when the specified country is the shop's country.
-                // This allows in this case the function to continue and use "basic" tax rates for the home-country.
-                // By "basic" tax rates we mean the tax rates with no specified country.
-                throw new IncorrectDataException("The country with ISO '%s' doesn't exist in the Moneybird account".formatted(countryIso), HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        // Getting Max TaxRate for the country where the shop is located
-        // or for the case if the country is not specified.
-        // TODO check what to do in case the customer's country (from Etsy receipt) is not specified:
-        //  1. Should we take the TaxRate from the country of the shop? (which happens right now)
-        //  2. Or should we throw an exception?
-
-        Iterable<MoneybirdTaxRate> taxRates = taxRatesService
-                .getAllTaxRates()
-                .toIterable();
-        return getMaxTaxRate(taxRates, false);
-    }
-
-    // Gets a max TaxRate form provided 'taxRates'.
-    // If 'isCountryKnown' is 'false' then the function returns a max standard TaxRate.
-    private MoneybirdTaxRate getMaxTaxRate(Iterable<MoneybirdTaxRate> taxRates, boolean isCountryKnown) {
-        double ratePercentage = 0;
-        MoneybirdTaxRate maxRate = null;
-
-        for (MoneybirdTaxRate rate : taxRates) {
-            if (!isCountryKnown && rate.getCountry() != null) {
-                continue;
-            }
-            double currentRatePerc = Double.parseDouble(rate.getPercentage());
-            if (ratePercentage < currentRatePerc) {
-                ratePercentage = currentRatePerc;
-                maxRate = rate;
-            }
-        }
-        return maxRate;
     }
 
     // Calculates the TaxRate from Etsy, finds the same TaxRate in MB,

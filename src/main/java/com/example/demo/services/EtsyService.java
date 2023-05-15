@@ -47,9 +47,9 @@ public class EtsyService implements IEtsyService {
                         .path("shops/{shopId}/receipts")
                         // these params will let us receive the needed receipts
 //                        .queryParam("limit", 50)
-                        .queryParam("limit", 2)
-                        .queryParam("min_created", 1677628800)
-                        .queryParam("max_created", 1680307199)
+                        .queryParam("limit", 3)
+//                        .queryParam("min_created", 1677628800)
+//                        .queryParam("max_created", 1680307199)
                         .build(shop.getShopId()))
                 .exchangeToMono(response -> {
                     if (response.statusCode().equals(HttpStatus.OK))
