@@ -1,5 +1,6 @@
 package com.example.demo.services;
 
+import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.services.interfaces.IEtsyService;
 import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
@@ -7,16 +8,20 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Flux;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
@@ -35,7 +40,7 @@ public class InvoicerServiceTest {
     @Test
     public void testGetMaxTaxIfShopAndCustomerAreOfTheDomesticCountry() {
         given(etsyService.getShopIso()).willReturn("DU");
-        doReturn(getTestTaxRates().filter(rate -> rate.getCountry() == null))
+        doReturn(getTestTaxRates().filter(Objects::isNull))
                 .when(taxRatesService).getDomesticTaxRates();
 
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax("DU");
@@ -65,13 +70,24 @@ public class InvoicerServiceTest {
                 .filter(rate -> rate.getCountry() != null
                         && rate.getCountry().equals("BY")))
                 .when(taxRatesService).getAllTaxRates("BY");
-        doReturn(getTestTaxRates().filter(rate -> rate.getCountry() == null))
+        doReturn(getTestTaxRates().filter(Objects::isNull))
                 .when(taxRatesService).getDomesticTaxRates();
 
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax("BY");
 
         assertEquals("21.0", taxRate.getPercentage());
         assertNull(taxRate.getCountry());
+    }
+
+    @Test
+    public void testGetMaxTaxRateThrowsException() {
+        given(etsyService.getShopIso()).willReturn("DU");
+        doReturn(Flux.just()).when(taxRatesService).getDomesticTaxRates();
+
+        IncorrectDataException thrown = assertThrows(IncorrectDataException.class,
+                () -> taxRatesService.getMaxCountryTax("DU"),
+                "Couldn't find max tax rate on Moneybird");
+        assertEquals(HttpStatus.BAD_REQUEST, thrown.getStatus());
     }
 
     private Flux<MoneybirdTaxRate> getTestTaxRates() {

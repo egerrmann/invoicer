@@ -1,15 +1,12 @@
 package com.example.demo.services;
 
+import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.models.etsy.EtsyTransaction;
-import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.models.moneybird.SalesInvoice;
-import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
@@ -17,7 +14,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
