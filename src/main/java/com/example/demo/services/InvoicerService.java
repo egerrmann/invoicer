@@ -60,7 +60,7 @@ public class InvoicerService implements IInvoicerService {
 
         String currencyCode = receipt.getTotalPrice().getCurrencyCode();
         invoice.setCurrency(currencyCode);
-        invoice.setPiecesAreInclTax(true);
+        invoice.setPricesAreInclTax(true);
 
         setDiscountForInvoice(invoice, receipt);
 

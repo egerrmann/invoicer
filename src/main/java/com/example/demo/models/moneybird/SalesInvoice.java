@@ -39,7 +39,7 @@ public class SalesInvoice {
     }
 
     private String currency;
-    private Boolean piecesAreInclTax;
+    private Boolean pricesAreInclTax;
     private String paymentConditions;
     private Double discount;
     // ??? (maybe we should delete this field)
