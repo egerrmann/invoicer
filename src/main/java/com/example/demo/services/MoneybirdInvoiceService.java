@@ -1,13 +1,14 @@
 package com.example.demo.services;
 
+import com.example.demo.models.moneybird.MoneybirdSalesInvoiceSending;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,12 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
 
+@AllArgsConstructor
 @Service
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
+    private SalesInvoiceSendingWrapper wrappedInvoiceSending;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -64,6 +67,23 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                 });
     }
 
+    @Override
+    public Mono<SalesInvoice> sendInvoice(String id) {
+
+        wrappedInvoiceSending
+                .getSalesInvoiceSending()
+                .setDeliveryMethod("Manual");
+
+        return webClientWithBaseUrl.patch()
+                .uri("/sales_invoices/" + id + "/send_invoice.json")
+                .body(BodyInserters.fromValue(wrappedInvoiceSending))
+                .exchangeToMono(response -> {
+                    if (response.statusCode() == HttpStatus.OK)
+                        return response.bodyToMono(SalesInvoice.class);
+                    else return response.createError();
+                });
+    }
+
     @Component
     @Getter
     @Setter
@@ -73,13 +93,11 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
         SalesInvoice salesInvoice;
     }
 
-    @Autowired
-    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-    }
-
-    @Autowired
-    private void setWrappedInvoice(SalesInvoiceWrapper wrappedInvoice) {
-        this.wrappedInvoice = wrappedInvoice;
+    @Component
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class SalesInvoiceSendingWrapper {
+        MoneybirdSalesInvoiceSending salesInvoiceSending;
     }
 }

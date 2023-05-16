@@ -17,6 +17,7 @@ import java.util.Objects;
 
 @Service
 public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountService {
+    // TODO Check if it works with final keyword after assigning a new webclient at a runtime
     private final WebClient webClientWithBaseUrl;
     private final LedgerWrapper wrappedLedger;
 

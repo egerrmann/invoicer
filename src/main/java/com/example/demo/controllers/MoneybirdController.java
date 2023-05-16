@@ -151,6 +151,20 @@ public class MoneybirdController {
         }
     }
 
+    // TODO Delete it if it's extra (we should, i suppose)
+    @PatchMapping("/invoices/{id}/send-invoice")
+    public ResponseEntity<Mono<SalesInvoice>> sendInvoice(
+            @PathVariable String id) {
+
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(invoiceService.sendInvoice(id));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Mono.error(ex));
+        }
+    }
+
     @Autowired
     private void setInvoiceService(IMoneybirdInvoiceService invoiceService) {
         this.invoiceService = invoiceService;

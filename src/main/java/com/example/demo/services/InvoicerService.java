@@ -43,8 +43,10 @@ public class InvoicerService implements IInvoicerService {
             SalesInvoice createdInvoice = invoiceService
                     .createInvoice(invoiceFromReceipt)
                     .block();
-            System.out.println(createdInvoice.getInvoiceDate());
-            invoices.add(createdInvoice);
+            SalesInvoice sentInvoice = invoiceService
+                    .sendInvoice(createdInvoice.getId())
+                    .block();
+            invoices.add(sentInvoice);
         }
         return invoices;
     }

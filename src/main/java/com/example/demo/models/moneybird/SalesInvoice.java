@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
+    private String id;
     private BigInteger contactId;
     private Integer contactPersonId;
     private Integer originalEstimateId;
