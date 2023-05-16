@@ -1,11 +1,13 @@
 package com.example.demo.services;
 
+import com.example.demo.models.etsy.EtsyPrice;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.models.etsy.EtsyTransaction;
 import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -17,18 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class InvoicerService implements IInvoicerService {
     private final IEtsyService etsyService;
     private final IMoneybirdContactService contactService;
     private final IMoneybirdInvoiceService invoiceService;
     private final IMoneybirdTaxRatesService taxRatesService;
-
-    public InvoicerService(IEtsyService etsyService, IMoneybirdContactService contactService, IMoneybirdInvoiceService invoiceService, IMoneybirdTaxRatesService taxRatesService) {
-        this.etsyService = etsyService;
-        this.contactService = contactService;
-        this.invoiceService = invoiceService;
-        this.taxRatesService = taxRatesService;
-    }
 
     @Override
     public List<SalesInvoice> createInvoices() {
@@ -64,7 +60,7 @@ public class InvoicerService implements IInvoicerService {
         invoice.setCurrency(currencyCode);
         invoice.setPricesAreInclTax(true);
 
-        setDiscountForInvoice(invoice, receipt);
+        //setDiscountForInvoice(invoice, receipt);
 
         invoice.setDetailsAttributes(detailsAttributesFromReceipt(receipt));
 
@@ -86,21 +82,6 @@ public class InvoicerService implements IInvoicerService {
             contact = resp.block();
         }
         invoice.setContactId(contact.getId());
-    }
-
-    // TODO: discuss with Peter if discount is set correctly
-    private void setDiscountForInvoice(SalesInvoice invoice,
-                                       EtsyReceipt receipt) {
-        double discount = receipt.getDiscountAmt().getAmount();
-        double total = receipt.getTotalPrice().getAmount();
-        double percentDiscount = discount * 100 / total;
-
-        DecimalFormat df = new DecimalFormat("#.##");
-        String formattedStringPercentDiscount = df.format(percentDiscount);
-        Double formattedPercentDiscount = Double
-                .valueOf(formattedStringPercentDiscount);
-
-        invoice.setDiscount(formattedPercentDiscount);
     }
 
     private MoneybirdContact contactFromReceipt(EtsyReceipt receipt) {
@@ -126,16 +107,18 @@ public class InvoicerService implements IInvoicerService {
     }
 
     // Create a list of Invoice Details Attributes according to receipt's transactions
-    private List<SalesInvoice.DetailsAttributes> detailsAttributesFromReceipt(EtsyReceipt receipt) {
+    private List<SalesInvoice.DetailsAttributes> detailsAttributesFromReceipt(
+            EtsyReceipt receipt) {
 
         ArrayList<SalesInvoice.DetailsAttributes> attributes
                 = new ArrayList<>();
-        MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(receipt.getCountryIso());
-//        MoneybirdTaxRate taxRate = getMaxTaxRate(receipt);
+
+        String countryIso = receipt.getCountryIso();
+        MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(countryIso);
 
         for (EtsyTransaction transaction : receipt.getTransactions()) {
-            SalesInvoice.DetailsAttributes attr =
-                    new SalesInvoice.DetailsAttributes();
+            SalesInvoice.DetailsAttributes attr
+                    = new SalesInvoice.DetailsAttributes();
 
             if (taxRate != null)
                 attr.setTaxRateId(new BigInteger(taxRate.getId()));
@@ -163,9 +146,55 @@ public class InvoicerService implements IInvoicerService {
             attributes.add(attr);
         }
 
+        // add a deliver attribute
+        attributes.add(getDeliveryAttribute(receipt, taxRate));
 
+        // add a discount attribute
+        SalesInvoice.DetailsAttributes discount
+                = getDiscountAttribute(receipt, taxRate);
+        boolean isDiscountApplied = discount.getAmount().equals("-0%");
+        if (!isDiscountApplied)
+            attributes.add(getDiscountAttribute(receipt, taxRate));
 
         return attributes;
+    }
+
+    private SalesInvoice.DetailsAttributes getDeliveryAttribute(
+            EtsyReceipt receipt,
+            MoneybirdTaxRate taxRate) {
+
+        SalesInvoice.DetailsAttributes deliveryAttr
+                = new SalesInvoice.DetailsAttributes();
+
+        deliveryAttr.setDescription("Delivery");
+        deliveryAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+
+        EtsyPrice shippingCost = receipt.getTotalShippingCost();
+        deliveryAttr.setPrice((double) shippingCost.getAmount()
+                / shippingCost.getDivisor());
+
+        return deliveryAttr;
+    }
+
+    private SalesInvoice.DetailsAttributes getDiscountAttribute(
+            EtsyReceipt receipt,
+            MoneybirdTaxRate taxRate) {
+
+        SalesInvoice.DetailsAttributes discountAttr
+                = new SalesInvoice.DetailsAttributes();
+
+        discountAttr.setDescription("Discount");
+        discountAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+
+        EtsyPrice price = receipt.getTotalPrice();
+        discountAttr.setPrice((double) price.getAmount()
+                / price.getDivisor());
+
+        double percent = (double) receipt.getDiscountAmt().getAmount()
+                / receipt.getTotalPrice().getAmount();
+        discountAttr.setAmount(String.format("-%d%%", Math.round(percent * 100)));
+
+        return discountAttr;
     }
 
     // Calculates the TaxRate from Etsy, finds the same TaxRate in MB,
