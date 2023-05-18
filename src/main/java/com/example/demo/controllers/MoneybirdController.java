@@ -134,7 +134,7 @@ public class MoneybirdController {
             @RequestBody MoneybirdLedgerAccount ledger) {
 
         try {
-            String id = ledgerAccountService.getLedgerId(ledger);
+            String id = ledgerAccountService.getLedgerId(ledger.getName());
             if (id == null) {
                 id = ledgerAccountService.createLedger(ledger)
                         .block()

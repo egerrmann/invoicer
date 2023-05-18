@@ -25,6 +25,7 @@ public class InvoicerService implements IInvoicerService {
     private final IMoneybirdContactService contactService;
     private final IMoneybirdInvoiceService invoiceService;
     private final IMoneybirdTaxRatesService taxRatesService;
+    private final IMoneybirdLedgerAccountService ledgerAccountService;
 
     @Override
     public List<SalesInvoice> createInvoices() {
@@ -115,6 +116,7 @@ public class InvoicerService implements IInvoicerService {
 
         String countryIso = receipt.getCountryIso();
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(countryIso);
+        String moneybirdLedgerId = ledgerAccountService.getLedgerId(countryIso);
 
         for (EtsyTransaction transaction : receipt.getTransactions()) {
             SalesInvoice.DetailsAttributes attr
@@ -127,6 +129,8 @@ public class InvoicerService implements IInvoicerService {
             attr.setAmount(transaction.getQuantity().toString());
             attr.setPrice((double) transaction.getPrice().getAmount()
                     / transaction.getPrice().getDivisor());
+
+            attr.setLedgerAccountId(new BigInteger(moneybirdLedgerId));
 
             // TODO: verify that the following is correct
             // The specified period is from Payment Date to Shipment Date
@@ -146,22 +150,23 @@ public class InvoicerService implements IInvoicerService {
             attributes.add(attr);
         }
 
-        // add a deliver attribute
-        attributes.add(getDeliveryAttribute(receipt, taxRate));
+        // add a delivery attribute
+        attributes.add(getDeliveryAttribute(receipt, taxRate, moneybirdLedgerId));
 
-        // add a discount attribute
+        // add a discount attribute if discount is applied by etsy
         SalesInvoice.DetailsAttributes discount
-                = getDiscountAttribute(receipt, taxRate);
+                = getDiscountAttribute(receipt, taxRate, moneybirdLedgerId);
         boolean isDiscountApplied = discount.getAmount().equals("-0%");
         if (!isDiscountApplied)
-            attributes.add(getDiscountAttribute(receipt, taxRate));
+            attributes.add(discount);
 
         return attributes;
     }
 
     private SalesInvoice.DetailsAttributes getDeliveryAttribute(
             EtsyReceipt receipt,
-            MoneybirdTaxRate taxRate) {
+            MoneybirdTaxRate taxRate,
+            String ledgerId) {
 
         SalesInvoice.DetailsAttributes deliveryAttr
                 = new SalesInvoice.DetailsAttributes();
@@ -173,12 +178,15 @@ public class InvoicerService implements IInvoicerService {
         deliveryAttr.setPrice((double) shippingCost.getAmount()
                 / shippingCost.getDivisor());
 
+        deliveryAttr.setLedgerAccountId(new BigInteger(ledgerId));
+
         return deliveryAttr;
     }
 
     private SalesInvoice.DetailsAttributes getDiscountAttribute(
             EtsyReceipt receipt,
-            MoneybirdTaxRate taxRate) {
+            MoneybirdTaxRate taxRate,
+            String ledgerId) {
 
         SalesInvoice.DetailsAttributes discountAttr
                 = new SalesInvoice.DetailsAttributes();
@@ -193,6 +201,8 @@ public class InvoicerService implements IInvoicerService {
         double percent = (double) receipt.getDiscountAmt().getAmount()
                 / receipt.getTotalPrice().getAmount();
         discountAttr.setAmount(String.format("-%d%%", Math.round(percent * 100)));
+
+        discountAttr.setLedgerAccountId(new BigInteger(ledgerId));
 
         return discountAttr;
     }

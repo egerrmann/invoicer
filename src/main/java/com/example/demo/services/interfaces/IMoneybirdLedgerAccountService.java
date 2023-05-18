@@ -7,5 +7,5 @@ import reactor.core.publisher.Mono;
 public interface IMoneybirdLedgerAccountService {
     Flux<MoneybirdLedgerAccount> getAllLedgers();
     Mono<MoneybirdLedgerAccount> createLedger(MoneybirdLedgerAccount ledger);
-    String getLedgerId(MoneybirdLedgerAccount ledger);
+    String getLedgerId(String customerIsoCountry);
 }
