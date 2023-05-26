@@ -9,6 +9,7 @@ import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
@@ -52,6 +53,7 @@ public class InvoicerService implements IInvoicerService {
         SalesInvoice invoice = new SalesInvoice();
 
         setContactIdForInvoice(invoice, receipt);
+        invoice.setReference(receipt.getReceiptId().toString());
 
         Long createTimestamp = receipt.getCreateTimestamp();
         String createDate = timestampToIsoDate(createTimestamp);
@@ -76,11 +78,11 @@ public class InvoicerService implements IInvoicerService {
         if (contactId != null && !contactId.isEmpty()) {
             contact.setId(new BigInteger(contactService.getContactId(contact)));
         } else {
-            Mono<MoneybirdContact> resp = contactService.createContact(contact);
-            resp.subscribe(null, error -> {
-                System.out.println(error.getLocalizedMessage());
-            });
-            contact = resp.block();
+            contact = contactService.createContact(contact).block();
+//            resp.subscribe(null, error -> {
+//                System.out.println(error.getLocalizedMessage());
+//            });
+//            contact = resp.block();
         }
         invoice.setContactId(contact.getId());
     }
@@ -207,6 +209,7 @@ public class InvoicerService implements IInvoicerService {
         return discountAttr;
     }
 
+    // TODO Delete this method
     // Calculates the TaxRate from Etsy, finds the same TaxRate in MB,
     // and returns it.
     private MoneybirdTaxRate getEtsyTaxRate(EtsyReceipt receipt) {

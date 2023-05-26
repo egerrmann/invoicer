@@ -48,20 +48,22 @@ public class MoneybirdContact {
     private Boolean directDebit;
     // some fields are not added
 
-
+    // TODO Decide if we should provide any value if both names are null
     public String getFullName() {
-        if (firstname == null || lastname == null)
-            return null;
-        return firstname + lastname;
+        if (firstname != null && lastname != null)
+            return firstname + lastname;
+
+        if (firstname != null)
+            return firstname;
+
+        if (lastname != null)
+            return lastname;
+
+        return null;
     }
 
     public Optional<String> getOptionalFullName() {
         return Optional.ofNullable(getFullName());
-    }
-
-    // TODO: discuss if Etsy provides company names for customers
-    public Optional<String> getOptionalCompanyName() {
-        return Optional.ofNullable(companyName);
     }
 
     // Sets the first and last names of the contact from their full name.
@@ -70,6 +72,12 @@ public class MoneybirdContact {
     // last name --> the last word from a full name.
     public void setFirstAndLastName(String fullName) {
         fullName = fullName.trim();
+
+        if (!fullName.contains(" ")) {
+            this.firstname = fullName;
+            return;
+        }
+
         this.firstname = fullName.substring(0, fullName.lastIndexOf(" ")).trim();
         this.lastname = fullName.substring(fullName.lastIndexOf(" ")).trim();
     }

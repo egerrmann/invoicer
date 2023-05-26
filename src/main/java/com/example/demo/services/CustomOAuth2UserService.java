@@ -78,6 +78,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return userAndShop;
     }
 
+    // TODO Remove subscribe() method because mono is blocked twice here
     // Gets ids of the User and the shop they own
     private GetMeResponse getIds(WebClient webClient) {
         Mono<GetMeResponse> resp = webClient.get()
