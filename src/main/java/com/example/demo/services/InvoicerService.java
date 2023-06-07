@@ -158,9 +158,14 @@ public class InvoicerService implements IInvoicerService {
         // add a discount attribute if discount is applied by etsy
         SalesInvoice.DetailsAttributes discount
                 = getDiscountAttribute(receipt, taxRate, moneybirdLedgerId);
-        boolean isDiscountApplied = discount.getAmount().equals("-0%");
-        if (!isDiscountApplied)
+        if (discount.getPrice() != 0)
             attributes.add(discount);
+
+        // add a refund cost attribute
+        SalesInvoice.DetailsAttributes refund =
+                getRefundedCostAttribute(receipt, taxRate, moneybirdLedgerId);
+        if (refund.getPrice() != 0)
+            attributes.add(refund);
 
         return attributes;
     }
@@ -196,17 +201,36 @@ public class InvoicerService implements IInvoicerService {
         discountAttr.setDescription("Discount");
         discountAttr.setTaxRateId(new BigInteger(taxRate.getId()));
 
-        EtsyPrice price = receipt.getTotalPrice();
-        discountAttr.setPrice((double) price.getAmount()
-                / price.getDivisor());
-
-        double percent = (double) receipt.getDiscountAmt().getAmount()
-                / receipt.getTotalPrice().getAmount();
-        discountAttr.setAmount(String.format("-%d%%", Math.round(percent * 100)));
+        EtsyPrice discount = receipt.getDiscountAmt();
+        discountAttr.setPrice(-1. * discount.getAmount()
+                / discount.getDivisor());
 
         discountAttr.setLedgerAccountId(new BigInteger(ledgerId));
 
         return discountAttr;
+    }
+
+    private SalesInvoice.DetailsAttributes getRefundedCostAttribute(
+            EtsyReceipt receipt,
+            MoneybirdTaxRate taxRate,
+            String ledgerId) {
+
+        SalesInvoice.DetailsAttributes refundAttr
+                = new SalesInvoice.DetailsAttributes();
+
+        refundAttr.setDescription("Refunded cost");
+        refundAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+
+        List<EtsyReceipt.Refund> refunds = receipt.getRefunds();
+        double totalRefunds = refunds.stream()
+                .map(EtsyReceipt.Refund::getAmount)
+                .map(o -> (double) o.getAmount() / o.getDivisor())
+                .reduce(0., Double::sum);
+        refundAttr.setPrice(-totalRefunds);
+
+        refundAttr.setLedgerAccountId(new BigInteger(ledgerId));
+
+        return refundAttr;
     }
 
     // TODO Delete this method

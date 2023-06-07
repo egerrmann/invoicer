@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+// TODO Make sure it's InvoicerServiceTest, but not TaxRatesServiceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
 public class InvoicerServiceTest {
