@@ -5,6 +5,7 @@ import com.example.demo.services.interfaces.IMoneybirdLedgerAccountService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -16,16 +17,11 @@ import reactor.core.publisher.Mono;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountService {
     // TODO Check if it works with final keyword after assigning a new webclient at a runtime
     private final WebClient webClientWithBaseUrl;
     private final LedgerWrapper wrappedLedger;
-
-    public MoneybirdLedgerAccountService(WebClient webClientWithBaseUrl,
-                                         LedgerWrapper wrappedLedger) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-        this.wrappedLedger = wrappedLedger;
-    }
 
     @Override
     public Flux<MoneybirdLedgerAccount> getAllLedgers() {

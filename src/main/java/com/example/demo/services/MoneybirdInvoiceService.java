@@ -5,10 +5,7 @@ import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -17,12 +14,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
-    private WebClient webClientWithBaseUrl;
-    private SalesInvoiceWrapper wrappedInvoice;
-    private SalesInvoiceSendingWrapper wrappedInvoiceSending;
+    private final WebClient webClientWithBaseUrl;
+    private final SalesInvoiceWrapper wrappedInvoice;
+    private final SalesInvoiceSendingWrapper wrappedInvoiceSending;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -99,3 +96,5 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
         MoneybirdSalesInvoiceSending salesInvoiceSending;
     }
 }
+
+

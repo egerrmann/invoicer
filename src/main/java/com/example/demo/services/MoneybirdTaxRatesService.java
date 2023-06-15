@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
     private final WebClient webClientWithBaseUrl;
     private final IEtsyService etsyService;

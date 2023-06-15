@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.InvoicerService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,12 +14,9 @@ import java.util.List;
 @RestController
 // TODO: change the URL (to "/index" I suppose)
 @RequestMapping("/invoicer")
+@RequiredArgsConstructor
 public class InvoicerController {
     private final InvoicerService service;
-
-    public InvoicerController(InvoicerService service) {
-        this.service = service;
-    }
 
     @GetMapping("/add-invoices")
     public ResponseEntity<List<SalesInvoice>> addAllInvoices() {

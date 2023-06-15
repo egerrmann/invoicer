@@ -4,7 +4,7 @@ package com.example.demo.controllers;
 import com.example.demo.models.etsy.EtsyLedger;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.services.interfaces.IEtsyService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,13 +16,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/etsy")
+@RequiredArgsConstructor
 public class EtsyController {
-    private IEtsyService authService;
-
-    @Autowired
-    private void setService(IEtsyService authService) {
-        this.authService = authService;
-    }
+    private final IEtsyService authService;
 
     @GetMapping("/receipts")
     public ResponseEntity<List<EtsyReceipt>> getReceipts() {

@@ -1,9 +1,11 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.moneybird.*;
-import com.example.demo.repositories.IContactRepository;
-import com.example.demo.services.interfaces.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.services.interfaces.IMoneybirdContactService;
+import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
+import com.example.demo.services.interfaces.IMoneybirdLedgerAccountService;
+import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,21 +14,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/moneybird")
+@RequiredArgsConstructor
 public class MoneybirdController {
-    private IMoneybirdInvoiceService invoiceService;
-    private IMoneybirdContactService contactService;
+    private final IMoneybirdInvoiceService invoiceService;
+    private final IMoneybirdContactService contactService;
     private final IMoneybirdTaxRatesService taxRatesService;
     private final IMoneybirdLedgerAccountService ledgerAccountService;
-    private final IInvoicerService invoicerService;
-    private final IContactRepository contactRepository;
-
-    public MoneybirdController(IMoneybirdTaxRatesService taxRatesService,
-                               IMoneybirdLedgerAccountService ledgerAccountService, IInvoicerService invoicerService, IContactRepository contactRepository) {
-        this.taxRatesService = taxRatesService;
-        this.ledgerAccountService = ledgerAccountService;
-        this.invoicerService = invoicerService;
-        this.contactRepository = contactRepository;
-    }
 
     @GetMapping("/invoices")
     public ResponseEntity<Flux<SalesInvoice>> getAllInvoices() {
@@ -162,22 +155,6 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Mono.error(ex));
         }
-    }
-
-    @GetMapping
-    public String testDB() {
-        contactService.updateContactTable();
-        return "Table is updated";
-    }
-
-    @Autowired
-    private void setInvoiceService(IMoneybirdInvoiceService invoiceService) {
-        this.invoiceService = invoiceService;
-    }
-
-    @Autowired
-    public void setContactService(IMoneybirdContactService contactService) {
-        this.contactService = contactService;
     }
 
 }

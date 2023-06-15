@@ -2,6 +2,7 @@ package com.example.demo.configuration.oauth2.etsy;
 
 import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.services.CustomOAuth2UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -23,15 +24,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class OAuth2LoginConfig {
 
     private final EtsyOAuthProperties properties;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> userService;
-
-    public OAuth2LoginConfig(EtsyOAuthProperties properties, CustomOAuth2UserService userService) {
-        this.properties = properties;
-        this.userService = userService;
-    }
+    private final CustomOAuth2UserService userService;
 
     @Bean("etsyFilterChain")
 //    @Order(2)
