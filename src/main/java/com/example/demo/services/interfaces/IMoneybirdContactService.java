@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 public interface IMoneybirdContactService {
     Flux<MoneybirdContact> getAllContacts();
     Mono<MoneybirdContact> getContactById(String id);
-    String getContactId(MoneybirdContact contact);
+    Long getContactId(MoneybirdContact contact);
     Mono<MoneybirdContact> createContact(MoneybirdContact contact);
+    void updateContactTable();
 }

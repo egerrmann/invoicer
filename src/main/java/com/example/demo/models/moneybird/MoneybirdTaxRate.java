@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 
-import java.math.BigInteger;
-
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MoneybirdTaxRate {
     private String id;
-    private BigInteger administrationId;
+    private Long administrationId;
     private String name;
     private String percentage;
     private String taxRateType;

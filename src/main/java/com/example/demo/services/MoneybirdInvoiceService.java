@@ -9,15 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.math.BigInteger;
 
 @AllArgsConstructor
 @Service
@@ -30,7 +28,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     public SalesInvoice getTestInvoice() {
         SalesInvoice invoice = new SalesInvoice();
         invoice.setReference("30052");
-        invoice.setContactId(new BigInteger("380279277811139756"));
+        invoice.setContactId(380279277811139756L);
         //invoice.setDiscount(15.5);
 
         SalesInvoice.DetailsAttributes detailsAttributes =

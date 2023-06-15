@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.moneybird.*;
+import com.example.demo.repositories.IContactRepository;
 import com.example.demo.services.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.math.BigInteger;
 
 @RestController
 @RequestMapping("/moneybird")
@@ -19,12 +18,14 @@ public class MoneybirdController {
     private final IMoneybirdTaxRatesService taxRatesService;
     private final IMoneybirdLedgerAccountService ledgerAccountService;
     private final IInvoicerService invoicerService;
+    private final IContactRepository contactRepository;
 
     public MoneybirdController(IMoneybirdTaxRatesService taxRatesService,
-                               IMoneybirdLedgerAccountService ledgerAccountService, IInvoicerService invoicerService) {
+                               IMoneybirdLedgerAccountService ledgerAccountService, IInvoicerService invoicerService, IContactRepository contactRepository) {
         this.taxRatesService = taxRatesService;
         this.ledgerAccountService = ledgerAccountService;
         this.invoicerService = invoicerService;
+        this.contactRepository = contactRepository;
     }
 
     @GetMapping("/invoices")
@@ -45,9 +46,9 @@ public class MoneybirdController {
         try {
             SalesInvoice invoice = invoiceRequest.getInvoice();
 
-            String contactId = createContact(invoiceRequest.getContact())
+            Long contactId = createContact(invoiceRequest.getContact())
                     .getBody();
-            invoice.setContactId(new BigInteger(contactId));
+            invoice.setContactId(contactId);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(invoiceService.createInvoice(invoice));
@@ -82,17 +83,16 @@ public class MoneybirdController {
     }
 
     @PostMapping("/contacts")
-    public ResponseEntity<String> createContact(
+    public ResponseEntity<Long> createContact(
             @RequestBody MoneybirdContact contact) {
 
         try {
-            String id = contactService.getContactId(contact);
+            Long id = contactService.getContactId(contact);
             if (id == null) {
-                String body = contactService
+                Long body = contactService
                         .createContact(contact)
                         .block()
-                        .getId()
-                        .toString();
+                        .getId();
 
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .body(body);
@@ -102,8 +102,7 @@ public class MoneybirdController {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(id);
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
@@ -163,6 +162,12 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Mono.error(ex));
         }
+    }
+
+    @GetMapping
+    public String testDB() {
+        contactService.updateContactTable();
+        return "Table is updated";
     }
 
     @Autowired

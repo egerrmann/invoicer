@@ -9,10 +9,7 @@ import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -74,9 +71,9 @@ public class InvoicerService implements IInvoicerService {
     private void setContactIdForInvoice(SalesInvoice invoice,
                                         EtsyReceipt receipt) {
         MoneybirdContact contact = contactFromReceipt(receipt);
-        String contactId = contactService.getContactId(contact);
-        if (contactId != null && !contactId.isEmpty()) {
-            contact.setId(new BigInteger(contactService.getContactId(contact)));
+        Long contactId = contactService.getContactId(contact);
+        if (contactId != null) {
+            contact.setId(contactService.getContactId(contact));
         } else {
             contact = contactService.createContact(contact).block();
 //            resp.subscribe(null, error -> {
@@ -125,14 +122,14 @@ public class InvoicerService implements IInvoicerService {
                     = new SalesInvoice.DetailsAttributes();
 
             if (taxRate != null)
-                attr.setTaxRateId(new BigInteger(taxRate.getId()));
+                attr.setTaxRateId(Long.parseLong(taxRate.getId()));
 
             attr.setDescription(transaction.getTitle());
             attr.setAmount(transaction.getQuantity().toString());
             attr.setPrice((double) transaction.getPrice().getAmount()
                     / transaction.getPrice().getDivisor());
 
-            attr.setLedgerAccountId(new BigInteger(moneybirdLedgerId));
+            attr.setLedgerAccountId(Long.parseLong(moneybirdLedgerId));
 
             // TODO: verify that the following is correct
             // The specified period is from Payment Date to Shipment Date
@@ -179,13 +176,13 @@ public class InvoicerService implements IInvoicerService {
                 = new SalesInvoice.DetailsAttributes();
 
         deliveryAttr.setDescription("Delivery");
-        deliveryAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+        deliveryAttr.setTaxRateId(Long.parseLong(taxRate.getId()));
 
         EtsyPrice shippingCost = receipt.getTotalShippingCost();
         deliveryAttr.setPrice((double) shippingCost.getAmount()
                 / shippingCost.getDivisor());
 
-        deliveryAttr.setLedgerAccountId(new BigInteger(ledgerId));
+        deliveryAttr.setLedgerAccountId(Long.parseLong(ledgerId));
 
         return deliveryAttr;
     }
@@ -199,13 +196,13 @@ public class InvoicerService implements IInvoicerService {
                 = new SalesInvoice.DetailsAttributes();
 
         discountAttr.setDescription("Discount");
-        discountAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+        discountAttr.setTaxRateId(Long.parseLong(taxRate.getId()));
 
         EtsyPrice discount = receipt.getDiscountAmt();
         discountAttr.setPrice(-1. * discount.getAmount()
                 / discount.getDivisor());
 
-        discountAttr.setLedgerAccountId(new BigInteger(ledgerId));
+        discountAttr.setLedgerAccountId(Long.parseLong(ledgerId));
 
         return discountAttr;
     }
@@ -219,7 +216,7 @@ public class InvoicerService implements IInvoicerService {
                 = new SalesInvoice.DetailsAttributes();
 
         refundAttr.setDescription("Refunded cost");
-        refundAttr.setTaxRateId(new BigInteger(taxRate.getId()));
+        refundAttr.setTaxRateId(Long.parseLong(taxRate.getId()));
 
         List<EtsyReceipt.Refund> refunds = receipt.getRefunds();
         double totalRefunds = refunds.stream()
@@ -228,7 +225,7 @@ public class InvoicerService implements IInvoicerService {
                 .reduce(0., Double::sum);
         refundAttr.setPrice(-totalRefunds);
 
-        refundAttr.setLedgerAccountId(new BigInteger(ledgerId));
+        refundAttr.setLedgerAccountId(Long.parseLong(ledgerId));
 
         return refundAttr;
     }

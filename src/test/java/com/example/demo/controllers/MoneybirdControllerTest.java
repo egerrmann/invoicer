@@ -14,8 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import reactor.core.publisher.Flux;
 
-import java.math.BigInteger;
-
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -43,7 +41,7 @@ public class MoneybirdControllerTest {
     public void getAllInvoicesTest() throws Exception {
         SalesInvoice invoice = new SalesInvoice();
         invoice.setReference("30052");
-        invoice.setContactId(new BigInteger("380279277811139756"));
+        invoice.setContactId(380279277811139756L);
         //invoice.setDiscount(15.5);
 
         SalesInvoice.DetailsAttributes detailsAttributes =
@@ -58,6 +56,6 @@ public class MoneybirdControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contactId", is(new BigInteger("380279277811139756"))));
+                .andExpect(jsonPath("$[0].contactId", is(380279277811139756L)));
     }
 }

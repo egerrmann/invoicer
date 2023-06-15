@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +18,11 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
     private String id;
-    private BigInteger contactId;
+    private Long contactId;
     private Integer contactPersonId;
     private Integer originalEstimateId;
-    private BigInteger documentStyleId;
-    private BigInteger workflowId;
+    private Long documentStyleId;
+    private Long workflowId;
     private String reference;
     private String invoiceSequenceId;
     private String invoiceDate;
@@ -76,13 +75,13 @@ public class SalesInvoice {
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DetailsAttributes {
-        private BigInteger id;
+        private Long id;
         private String description;
         private String period;
         private Double price;
         private String amount;
-        private BigInteger taxRateId;
-        private BigInteger ledgerAccountId;
+        private Long taxRateId;
+        private Long ledgerAccountId;
         private Integer projectId;
         private Integer productId;
         // type?
@@ -98,7 +97,7 @@ public class SalesInvoice {
     @NoArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class CustomFieldsAttributes {
-        private BigInteger id;
+        private Long id;
         private String value;
     }
 }

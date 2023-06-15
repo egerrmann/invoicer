@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigInteger;
 import java.util.Optional;
 
 @Getter
@@ -14,7 +13,7 @@ import java.util.Optional;
 @ToString
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MoneybirdContact {
-    private BigInteger id;
+    private Long id;
     private String companyName;
     private String address1;
     private String address2;

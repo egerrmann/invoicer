@@ -1,13 +1,21 @@
 package com.example.demo.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Entity
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "moneybirdContactIdUnique",
+                columnNames = "moneybirdContactId")
+})
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class Contact {
     @Id
@@ -19,8 +27,8 @@ public class Contact {
     @JoinColumn(name = "userId"/*, nullable = false*/)
     private User user;
 
-    @Column(unique = true, nullable = false, length = 18)
-    private String moneybirdContactId;
+    @Column(nullable = false)
+    private Long moneybirdContactId;
 
     @Column(nullable = false, length = 50)
     private String firstName;

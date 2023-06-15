@@ -1,13 +1,15 @@
 package com.example.demo.services;
 
+import com.example.demo.entities.Contact;
 import com.example.demo.models.moneybird.MoneybirdContact;
+import com.example.demo.repositories.IContactRepository;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
+@RequiredArgsConstructor
 public class MoneybirdContactService implements IMoneybirdContactService {
-    private WebClient webClientWithBaseUrl;
-    private ContactWrapper wrappedContact;
+    private final WebClient webClientWithBaseUrl;
+    private final ContactWrapper wrappedContact;
+    private final IContactRepository contactRepository;
 
     // TODO: move this method to the test class
     public MoneybirdContact getTestContact() {
@@ -34,13 +39,56 @@ public class MoneybirdContactService implements IMoneybirdContactService {
 
     @Override
     public Flux<MoneybirdContact> getAllContacts() {
-        return webClientWithBaseUrl.get()
-                .uri("/contacts.json")
-                .exchangeToFlux(response -> {
-                    if (response.statusCode().equals(HttpStatus.OK))
-                        return response.bodyToFlux(MoneybirdContact.class);
-                    else return response.createError().flux().cast(MoneybirdContact.class);
-                });
+        Flux<MoneybirdContact> allContacts = Flux.empty();
+        Flux<MoneybirdContact> contactsFromOnePage;
+        boolean isPageWithContactsEmpty = false;
+        AtomicInteger pageNumber = new AtomicInteger(1);
+
+        while (!isPageWithContactsEmpty) {
+            contactsFromOnePage = webClientWithBaseUrl.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/contacts.json")
+                            .queryParam("per_page", 100)
+                            .queryParam("page", pageNumber.getAndIncrement())
+                            .build())
+                    .exchangeToFlux(response -> {
+                        if (response.statusCode().equals(HttpStatus.OK))
+                            return response.bodyToFlux(MoneybirdContact.class);
+                        else return response.createError().flux().cast(MoneybirdContact.class);
+                    });
+            if (contactsFromOnePage.hasElements().block()) {
+                allContacts = Flux.concat(allContacts, contactsFromOnePage);
+            }
+            else {
+                isPageWithContactsEmpty = true;
+            }
+        }
+
+        return allContacts;
+    }
+
+    @Override
+    public void updateContactTable() {
+        Iterable<MoneybirdContact> contactIterable =
+                getAllContacts().toIterable();
+
+        for (MoneybirdContact moneybirdContact : contactIterable) {
+            boolean isRecordAdded = !contactRepository
+                    .findByMoneybirdContactId(moneybirdContact.getId())
+                    .isEmpty();
+            if (!isRecordAdded) {
+                contactRepository.save(Contact.builder()
+                        .moneybirdContactId(moneybirdContact.getId())
+                        .city(moneybirdContact.getCity())
+                        .address1(moneybirdContact.getAddress1())
+                        .address2(moneybirdContact.getAddress2())
+                        .countryIso(moneybirdContact.getCountry())
+                        .firstName(moneybirdContact.getFirstname())
+                        .lastName(moneybirdContact.getLastname())
+                        .zipCode(moneybirdContact.getZipcode())
+                        .build());
+            }
+        }
     }
 
     @Override
@@ -56,12 +104,12 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     }
 
     @Override
-    public String getContactId(MoneybirdContact contact) {
+    public Long getContactId(MoneybirdContact contact) {
         Optional<String> contactFullName = contact.getOptionalFullName();
 
         Iterable<MoneybirdContact> addedContacts =
                 getAllContacts().toIterable();
-        String id = null;
+        Long id = null;
 
         for (MoneybirdContact addedContact : addedContacts) {
             Optional<String> addedContactFullName =
@@ -72,7 +120,7 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                     && addedContactFullName.get().equals(contactFullName.get());
 
             if (isFullNameTheSame) {
-                id = addedContact.getId().toString();
+                id = addedContact.getId();
                 break;
             }
         }
@@ -95,11 +143,6 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                 });
     }
 
-    @Autowired
-    private void setWebClientWithBaseUrl(WebClient webClientWithBaseUrl) {
-        this.webClientWithBaseUrl = webClientWithBaseUrl;
-    }
-
     @Component
     @Getter
     @Setter
@@ -107,10 +150,5 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ContactWrapper {
         MoneybirdContact contact;
-    }
-
-    @Autowired
-    private void setWrappedContact(MoneybirdContactService.ContactWrapper wrappedContact) {
-        this.wrappedContact = wrappedContact;
     }
 }

@@ -16,10 +16,10 @@ public class User {
     private UUID userId;
 
     @Column(nullable = false, length = 18)
-    private String moneybirdAccountId;
+    private Long moneybirdAccountId;
 
-    @Column(nullable = false)
-    private String etsyShopId;
+    @Column(nullable = false, length = 10)
+    private Long etsyShopId;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<Contact> contacts;
