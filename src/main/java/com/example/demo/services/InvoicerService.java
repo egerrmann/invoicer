@@ -20,13 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoicerService implements IInvoicerService {
     private final IEtsyService etsyService;
-    private final IMoneybirdContactService contactService;
+    private final IInvoicerContactService invoicerContactService;
     private final IMoneybirdInvoiceService invoiceService;
     private final IMoneybirdTaxRatesService taxRatesService;
     private final IMoneybirdLedgerAccountService ledgerAccountService;
 
     @Override
     public List<SalesInvoice> createInvoices() {
+        invoicerContactService.updateContactTable();
         List<EtsyReceipt> receipts = etsyService.getReceiptsList();
         return receiptsToInvoices(receipts);
     }
@@ -49,7 +50,7 @@ public class InvoicerService implements IInvoicerService {
     private SalesInvoice receiptToInvoice(EtsyReceipt receipt) {
         SalesInvoice invoice = new SalesInvoice();
 
-        setContactIdForInvoice(invoice, receipt);
+        invoicerContactService.setContactIdForInvoice(invoice, receipt);
         invoice.setReference(receipt.getReceiptId().toString());
 
         Long createTimestamp = receipt.getCreateTimestamp();
@@ -66,44 +67,6 @@ public class InvoicerService implements IInvoicerService {
 
 
         return invoice;
-    }
-
-    private void setContactIdForInvoice(SalesInvoice invoice,
-                                        EtsyReceipt receipt) {
-        MoneybirdContact contact = contactFromReceipt(receipt);
-        Long contactId = contactService.getContactId(contact);
-        if (contactId != null) {
-            contact.setId(contactService.getContactId(contact));
-        } else {
-            contact = contactService.createContact(contact).block();
-//            resp.subscribe(null, error -> {
-//                System.out.println(error.getLocalizedMessage());
-//            });
-//            contact = resp.block();
-        }
-        invoice.setContactId(contact.getId());
-    }
-
-    private MoneybirdContact contactFromReceipt(EtsyReceipt receipt) {
-        MoneybirdContact contact = new MoneybirdContact();
-
-        // Setting up address
-        contact.setAddress1(receipt.getFirstLine());
-        contact.setAddress2(receipt.getSecondLine());
-        contact.setCity(receipt.getCity());
-        contact.setZipcode(receipt.getZip());
-
-        // Getting a country from its ISO
-        contact.setCountry(receipt.getCountryIso());
-        // End of address part
-
-        // Setting first and last names
-        contact.setFirstAndLastName(receipt.getName());
-
-        // Decide if we'll set a tax_rate_id.
-        // Add the rest of the fields and create a contact with the Service
-
-        return contact;
     }
 
     // Create a list of Invoice Details Attributes according to receipt's transactions

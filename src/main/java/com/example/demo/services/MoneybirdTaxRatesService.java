@@ -16,6 +16,7 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
     private final WebClient webClientWithBaseUrl;
     private final IEtsyService etsyService;
 
+    // TODO Add pagination
     @Override
     public Flux<MoneybirdTaxRate> getAllTaxRates() {
         return webClientWithBaseUrl.get()

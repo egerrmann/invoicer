@@ -9,5 +9,4 @@ public interface IMoneybirdContactService {
     Mono<MoneybirdContact> getContactById(String id);
     Long getContactId(MoneybirdContact contact);
     Mono<MoneybirdContact> createContact(MoneybirdContact contact);
-    void updateContactTable();
 }

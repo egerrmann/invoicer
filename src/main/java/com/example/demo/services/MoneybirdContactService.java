@@ -1,6 +1,5 @@
 package com.example.demo.services;
 
-import com.example.demo.entities.Contact;
 import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.repositories.IContactRepository;
 import com.example.demo.services.interfaces.IMoneybirdContactService;
@@ -65,30 +64,6 @@ public class MoneybirdContactService implements IMoneybirdContactService {
         }
 
         return allContacts;
-    }
-
-    @Override
-    public void updateContactTable() {
-        Iterable<MoneybirdContact> contactIterable =
-                getAllContacts().toIterable();
-
-        for (MoneybirdContact moneybirdContact : contactIterable) {
-            boolean isRecordAdded = !contactRepository
-                    .findByMoneybirdContactId(moneybirdContact.getId())
-                    .isEmpty();
-            if (!isRecordAdded) {
-                contactRepository.save(Contact.builder()
-                        .moneybirdContactId(moneybirdContact.getId())
-                        .city(moneybirdContact.getCity())
-                        .address1(moneybirdContact.getAddress1())
-                        .address2(moneybirdContact.getAddress2())
-                        .countryIso(moneybirdContact.getCountry())
-                        .firstName(moneybirdContact.getFirstname())
-                        .lastName(moneybirdContact.getLastname())
-                        .zipCode(moneybirdContact.getZipcode())
-                        .build());
-            }
-        }
     }
 
     @Override

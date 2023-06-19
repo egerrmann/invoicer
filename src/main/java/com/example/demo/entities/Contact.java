@@ -33,7 +33,7 @@ public class Contact {
     @Column(nullable = false, length = 50)
     private String firstName;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String lastName;
 
     @Column(nullable = false, length = 50)
