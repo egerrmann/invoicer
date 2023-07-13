@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
+// TODO Reduce number of API requests
 @RequiredArgsConstructor
 @Service
 public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
@@ -55,8 +58,15 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
     @Override
     public Flux<MoneybirdTaxRate> getDomesticTaxRates() {
         return getAllTaxRates()
-                .filter(rate -> rate
-                        .getCountry() == null);
+                .filter(rate -> rate.getCountry() == null
+                        && !rate.getName().contains("EU"));
+    }
+
+    @Override
+    public Flux<MoneybirdTaxRate> getOutsideEUTaxRates() {
+        return getAllTaxRates()
+                .filter(rate -> rate.getCountry() == null
+                        && rate.getName().contains("EU"));
     }
 
     // TODO we may consider getting TaxRates from MB only once
@@ -79,7 +89,12 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
 
         if (isTaxDomestic) {
             taxRates = getDomesticTaxRates();
-        } else {
+        }
+        else if (customerCountryIso.equals("GB")
+                || customerCountryIso.equals("NO")) {
+            taxRates = getOutsideEUTaxRates();
+        }
+        else {
             // getting the taxRates for a specified country
             taxRates = getAllTaxRates(customerCountryIso);
 
@@ -97,7 +112,7 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
         return getMaxTaxRate(taxRates);
     }
 
-    // gets a max TaxRate form provided 'taxRates'
+    // gets a max TaxRate from provided 'taxRates'
     private MoneybirdTaxRate getMaxTaxRate(Flux<MoneybirdTaxRate> taxRates) {
         /*double ratePercentage = 0;
         MoneybirdTaxRate maxRate = null;

@@ -7,5 +7,6 @@ public interface IMoneybirdTaxRatesService {
     Flux<MoneybirdTaxRate> getAllTaxRates();
     Flux<MoneybirdTaxRate> getAllTaxRates(String countryISO);
     Flux<MoneybirdTaxRate> getDomesticTaxRates();
+    Flux<MoneybirdTaxRate> getOutsideEUTaxRates();
     MoneybirdTaxRate getMaxCountryTax(String customerCountryIso);
 }
