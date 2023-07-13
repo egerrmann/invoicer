@@ -50,7 +50,6 @@ public class EtsyService implements IEtsyService {
 //                        .queryParam("limit", 3)
                         .queryParam("min_created", 1682899201)
                         .queryParam("max_created", 1683244801)
-                        .queryParam("was_canceled", false)
                         .build(shop.getShopId()))
                 .exchangeToMono(response -> {
                     if (response.statusCode().equals(HttpStatus.OK))

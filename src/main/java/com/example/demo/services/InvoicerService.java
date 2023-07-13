@@ -37,19 +37,26 @@ public class InvoicerService implements IInvoicerService {
     private List<SalesInvoice> receiptsToInvoices(List<EtsyReceipt> receipts) {
         List<SalesInvoice> invoices = new ArrayList<>();
         for (EtsyReceipt receipt : receipts) {
-            SalesInvoice invoiceFromReceipt = receiptToInvoice(receipt);
-            SalesInvoice createdInvoice = invoiceService
-                    .createInvoice(invoiceFromReceipt)
-                    .block();
-            SalesInvoice sentInvoice = invoiceService
-                    .sendInvoice(createdInvoice.getId())
-                    .block();
-            invoices.add(sentInvoice);
+            SalesInvoice invoiceFromReceipt = receiptToInvoice(receipt, false);
+            invoices.add(createAndSendInvoice(invoiceFromReceipt));
+            if (!receipt.getRefunds().isEmpty()) {
+                invoiceFromReceipt = receiptToInvoice(receipt, true);
+                invoices.add(createAndSendInvoice(invoiceFromReceipt));
+            }
         }
         return invoices;
     }
 
-    private SalesInvoice receiptToInvoice(EtsyReceipt receipt) {
+    private SalesInvoice createAndSendInvoice(SalesInvoice invoiceFromReceipt) {
+        SalesInvoice createdInvoice = invoiceService
+                .createInvoice(invoiceFromReceipt)
+                .block();
+        return invoiceService
+                .sendInvoice(createdInvoice.getId())
+                .block();
+    }
+
+    private SalesInvoice receiptToInvoice(EtsyReceipt receipt, boolean isWithRefund) {
         SalesInvoice invoice = new SalesInvoice();
 
         setContactIdForInvoice(invoice, receipt);
@@ -65,7 +72,7 @@ public class InvoicerService implements IInvoicerService {
 
         //setDiscountForInvoice(invoice, receipt);
 
-        invoice.setDetailsAttributes(detailsAttributesFromReceipt(receipt));
+        invoice.setDetailsAttributes(detailsAttributesFromReceipt(receipt, isWithRefund));
 
 
         return invoice;
@@ -111,14 +118,24 @@ public class InvoicerService implements IInvoicerService {
 
     // Create a list of Invoice Details Attributes according to receipt's transactions
     private List<SalesInvoice.DetailsAttributes> detailsAttributesFromReceipt(
-            EtsyReceipt receipt) {
+            EtsyReceipt receipt,
+            boolean isWithRefund) {
 
         ArrayList<SalesInvoice.DetailsAttributes> attributes
                 = new ArrayList<>();
 
+
         String countryIso = receipt.getCountryIso();
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(countryIso);
         String moneybirdLedgerId = ledgerAccountService.getLedgerId(countryIso);
+
+        if (isWithRefund) {
+            // add a refund cost attribute
+            SalesInvoice.DetailsAttributes refund =
+                    getRefundedCostAttribute(receipt, taxRate, moneybirdLedgerId);
+            attributes.add(refund);
+            return attributes;
+        }
 
         for (EtsyTransaction transaction : receipt.getTransactions()) {
             SalesInvoice.DetailsAttributes attr
@@ -161,11 +178,6 @@ public class InvoicerService implements IInvoicerService {
         if (discount.getPrice() != 0)
             attributes.add(discount);
 
-        // add a refund cost attribute
-        SalesInvoice.DetailsAttributes refund =
-                getRefundedCostAttribute(receipt, taxRate, moneybirdLedgerId);
-        if (refund.getPrice() != 0)
-            attributes.add(refund);
 
         return attributes;
     }
