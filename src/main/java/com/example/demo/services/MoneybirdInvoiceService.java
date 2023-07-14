@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.moneybird.MoneybirdSalesInvoiceSending;
+import com.example.demo.models.moneybird.MoneybirdSalesInvoiceSender;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private final WebClient webClientWithBaseUrl;
     private final SalesInvoiceWrapper wrappedInvoice;
-    private final SalesInvoiceSendingWrapper wrappedInvoiceSending;
+    private final SalesInvoiceSenderWrapper wrappedInvoiceSender;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -65,13 +65,13 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @Override
     public Mono<SalesInvoice> sendInvoice(String id) {
 
-        wrappedInvoiceSending
-                .getSalesInvoiceSending()
+        wrappedInvoiceSender
+                .getSalesInvoiceSender()
                 .setDeliveryMethod("Manual");
 
         return webClientWithBaseUrl.patch()
                 .uri("/sales_invoices/" + id + "/send_invoice.json")
-                .body(BodyInserters.fromValue(wrappedInvoiceSending))
+                .body(BodyInserters.fromValue(wrappedInvoiceSender))
                 .exchangeToMono(response -> {
                     if (response.statusCode() == HttpStatus.OK)
                         return response.bodyToMono(SalesInvoice.class);
@@ -92,8 +92,8 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class SalesInvoiceSendingWrapper {
-        MoneybirdSalesInvoiceSending salesInvoiceSending;
+    public static class SalesInvoiceSenderWrapper {
+        MoneybirdSalesInvoiceSender salesInvoiceSender;
     }
 }
 

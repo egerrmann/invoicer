@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class MoneybirdSalesInvoiceSending {
+public class MoneybirdSalesInvoiceSender {
     private String deliveryMethod;
 }

@@ -41,7 +41,7 @@ public class InvoicerServiceTest {
     @Test
     public void testGetMaxTaxIfShopAndCustomerAreOfTheDomesticCountry() {
         given(etsyService.getShopIso()).willReturn("DU");
-        doReturn(getTestTaxRates().filter(Objects::isNull))
+        doReturn(getTestTaxRates().filter(rate -> rate.getCountry() == null))
                 .when(taxRatesService).getDomesticTaxRates();
 
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax("DU");
@@ -71,7 +71,7 @@ public class InvoicerServiceTest {
                 .filter(rate -> rate.getCountry() != null
                         && rate.getCountry().equals("BY")))
                 .when(taxRatesService).getAllTaxRates("BY");
-        doReturn(getTestTaxRates().filter(Objects::isNull))
+        doReturn(getTestTaxRates().filter(rate -> rate.getCountry() == null))
                 .when(taxRatesService).getDomesticTaxRates();
 
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax("BY");

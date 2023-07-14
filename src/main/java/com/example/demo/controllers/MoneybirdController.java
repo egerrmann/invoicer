@@ -121,11 +121,12 @@ public class MoneybirdController {
         }
     }
 
-    @PostMapping("/ledgers")
+    /*@PostMapping("/ledgers")
     public ResponseEntity<String> createLedger(
             @RequestBody MoneybirdLedgerAccount ledger) {
 
         try {
+            // getLedgerId() works in different way
             String id = ledgerAccountService.getLedgerId(ledger.getName());
             if (id == null) {
                 id = ledgerAccountService.createLedger(ledger)
@@ -141,7 +142,7 @@ public class MoneybirdController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ex.getMessage());
         }
-    }
+    }*/
 
     // TODO Delete it if it's extra (we should, i suppose)
     @PatchMapping("/invoices/{id}/send-invoice")
