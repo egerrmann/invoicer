@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-import com.example.demo.models.moneybird.MoneybirdSalesInvoiceSending;
+import com.example.demo.models.moneybird.MoneybirdSalesInvoiceSender;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -24,7 +24,7 @@ import java.math.BigInteger;
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private WebClient webClientWithBaseUrl;
     private SalesInvoiceWrapper wrappedInvoice;
-    private SalesInvoiceSendingWrapper wrappedInvoiceSending;
+    private SalesInvoiceSenderWrapper wrappedInvoiceSending;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -71,7 +71,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     public Mono<SalesInvoice> sendInvoice(String id) {
 
         wrappedInvoiceSending
-                .getSalesInvoiceSending()
+                .getSalesInvoiceSender()
                 .setDeliveryMethod("Manual");
 
         return webClientWithBaseUrl.patch()
@@ -97,7 +97,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class SalesInvoiceSendingWrapper {
-        MoneybirdSalesInvoiceSending salesInvoiceSending;
+    public static class SalesInvoiceSenderWrapper {
+        MoneybirdSalesInvoiceSender salesInvoiceSender;
     }
 }
