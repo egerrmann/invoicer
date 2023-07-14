@@ -111,7 +111,7 @@ public class MoneybirdController {
     public ResponseEntity<Flux<MoneybirdTaxRate>> getAllTaxes() {
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(taxRatesService.getAllTaxRates());
+                    .body(taxRatesService.getAllTaxRates(""));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Flux.error(ex));
@@ -129,12 +129,13 @@ public class MoneybirdController {
         }
     }
 
-    @PostMapping("/ledgers")
+    /*@PostMapping("/ledgers")
     public ResponseEntity<String> createLedger(
             @RequestBody MoneybirdLedgerAccount ledger) {
 
         try {
-            String id = ledgerAccountService.getLedgerId(ledger);
+            // getLedgerId() works in different way
+            String id = ledgerAccountService.getLedgerId(ledger.getName());
             if (id == null) {
                 id = ledgerAccountService.createLedger(ledger)
                         .block()
@@ -148,6 +149,20 @@ public class MoneybirdController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ex.getMessage());
+        }
+    }*/
+
+    // TODO Delete it if it's extra (we should, i suppose)
+    @PatchMapping("/invoices/{id}/send-invoice")
+    public ResponseEntity<Mono<SalesInvoice>> sendInvoice(
+            @PathVariable String id) {
+
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(invoiceService.sendInvoice(id));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Mono.error(ex));
         }
     }
 

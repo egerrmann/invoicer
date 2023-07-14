@@ -22,6 +22,9 @@ public class InvoicerController {
 
     @GetMapping("/add-invoices")
     public ResponseEntity<List<SalesInvoice>> addAllInvoices() {
+        // TODO I suppose we have to leave only 'try'-block, because
+        //  CustomExceptionHandler returns a correct response entity depending
+        //  on an exception thrown and there is no need to handle it over here
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(service.createInvoices());

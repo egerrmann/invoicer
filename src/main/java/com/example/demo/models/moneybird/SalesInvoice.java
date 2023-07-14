@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SalesInvoice {
+    private String id;
     private BigInteger contactId;
     private Integer contactPersonId;
     private Integer originalEstimateId;
@@ -39,7 +40,7 @@ public class SalesInvoice {
     }
 
     private String currency;
-    private Boolean piecesAreInclTax;
+    private Boolean pricesAreInclTax;
     private String paymentConditions;
     private Double discount;
     // ??? (maybe we should delete this field)

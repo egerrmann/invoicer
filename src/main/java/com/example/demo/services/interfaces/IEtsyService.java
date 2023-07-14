@@ -12,4 +12,5 @@ public interface IEtsyService extends IEtsyConnect {
     Mono<GetReceiptList> getReceipts();
     Flux<EtsyLedger> getLedgers();
     List<EtsyReceipt> getReceiptsList();
+    String getShopIso();
 }

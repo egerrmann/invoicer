@@ -17,6 +17,7 @@ import java.util.Objects;
 
 @Service
 public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountService {
+    // TODO Check if it works with final keyword after assigning a new webclient at a runtime
     private final WebClient webClientWithBaseUrl;
     private final LedgerWrapper wrappedLedger;
 
@@ -55,25 +56,40 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
                 });
     }
 
+    // Checks if there are any ledgers containing
+    // a customer ISO country in their names
     @Override
-    public String getLedgerId(MoneybirdLedgerAccount ledger) {
-        String ledgerName = ledger.getName();
-
+    public String getLedgerId(String customerIsoCountry) {
         Iterable<MoneybirdLedgerAccount> addedLedgers = getAllLedgers()
                 .toIterable();
         String id = null;
+        String defaultLedgerId = null;
 
         for (MoneybirdLedgerAccount addedLedger : addedLedgers) {
-            String addedLedgerName = addedLedger.getName();
+            String addedLedgerName = addedLedger.getName().toLowerCase();
+            String formattedCustomerCountry = "("
+                    + customerIsoCountry.toLowerCase()
+                    + ")";
 
-            if (Objects.equals(addedLedgerName, ledgerName)) {
+            // If the added MB ledger contains a '(isoCountryName)' in its
+            // name, then get its id
+            if (addedLedgerName.contains(formattedCustomerCountry)) {
                 id = addedLedger.getId();
+                if (addedLedger.getName().contains("other countries"))
+                    defaultLedgerId = id;
                 break;
             }
         }
 
-        return id;
+        // returns the id of a particular ledger found or a default one otherwise
+        if (id != null)
+            return id;
+        else {
+            return defaultLedgerId;
+        }
     }
+
+
 
     @Component
     @Data

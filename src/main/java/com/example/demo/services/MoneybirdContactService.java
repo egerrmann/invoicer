@@ -58,7 +58,6 @@ public class MoneybirdContactService implements IMoneybirdContactService {
     @Override
     public String getContactId(MoneybirdContact contact) {
         Optional<String> contactFullName = contact.getOptionalFullName();
-        Optional<String> contactCompanyName = contact.getOptionalCompanyName();
 
         Iterable<MoneybirdContact> addedContacts =
                 getAllContacts().toIterable();
@@ -67,17 +66,12 @@ public class MoneybirdContactService implements IMoneybirdContactService {
         for (MoneybirdContact addedContact : addedContacts) {
             Optional<String> addedContactFullName =
                     addedContact.getOptionalFullName();
-            Optional<String> addedContactCompanyName =
-                    addedContact.getOptionalCompanyName();
 
-            boolean areFullNamesEqual = contactFullName.isPresent()
+            boolean isFullNameTheSame = contactFullName.isPresent()
                     && addedContactFullName.isPresent()
                     && addedContactFullName.get().equals(contactFullName.get());
-            boolean areCompanyNamesEqual = contactCompanyName.isPresent()
-                    && addedContactCompanyName.isPresent()
-                    && contactCompanyName.get().equals(addedContactCompanyName.get());
 
-            if (areFullNamesEqual || areCompanyNamesEqual) {
+            if (isFullNameTheSame) {
                 id = addedContact.getId().toString();
                 break;
             }
