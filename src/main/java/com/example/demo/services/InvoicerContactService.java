@@ -31,7 +31,9 @@ public class InvoicerContactService implements IInvoicerContactService {
         // try to find the contact in the DB
         Contact entityContact = entityContactFromReceipt(receipt);
         Example<Contact> example = Example.of(entityContact);
-        Optional<Contact> contactFromRepo = contactRepository.findOne(example);
+        Optional<Contact> contactFromRepo = contactRepository.findAll(example)
+                .stream()
+                .findAny();
 
         Long id;
 
@@ -96,7 +98,7 @@ public class InvoicerContactService implements IInvoicerContactService {
 
         return contact;
     }
-    
+
     private Contact entityContactFromReceipt(EtsyReceipt receipt) {
         String fullName = receipt.getName().trim();
         String firstName, lastName = null;

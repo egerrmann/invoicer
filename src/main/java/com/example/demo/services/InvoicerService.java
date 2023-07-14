@@ -26,9 +26,9 @@ public class InvoicerService implements IInvoicerService {
     private final IMoneybirdLedgerAccountService ledgerAccountService;
 
     @Override
-    public List<SalesInvoice> createInvoices() {
+    public List<SalesInvoice> createInvoices(String startDate, String endDate) {
         invoicerContactService.updateContactTable();
-        List<EtsyReceipt> receipts = etsyService.getReceiptsList();
+        List<EtsyReceipt> receipts = etsyService.getReceiptsList(startDate, endDate);
         return receiptsToInvoices(receipts);
     }
 

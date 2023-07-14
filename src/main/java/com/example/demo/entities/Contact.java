@@ -39,7 +39,7 @@ public class Contact {
     @Column(nullable = false, length = 50)
     private String address1;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String address2;
 
     @Column(nullable = false, length = 35)

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
@@ -21,8 +22,11 @@ public class EtsyController {
     private final IEtsyService authService;
 
     @GetMapping("/receipts")
-    public ResponseEntity<List<EtsyReceipt>> getReceipts() {
-        List<EtsyReceipt> resp = authService.getReceiptsList();
+    public ResponseEntity<List<EtsyReceipt>> getReceipts(
+            @RequestParam(name = "start-date") String startDate,
+            @RequestParam(name = "end-date") String endDate) {
+
+        List<EtsyReceipt> resp = authService.getReceiptsList(startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 

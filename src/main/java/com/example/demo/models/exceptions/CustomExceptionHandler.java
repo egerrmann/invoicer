@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CustomExceptionHandler {
     @ExceptionHandler
-    public ResponseEntity<String> handle(IncorrectDataException exception) {
+    public ResponseError handle(IncorrectDataException exception) {
         log.error(exception.getMessage(), exception);
-        return ResponseEntity.status(exception.getStatus()).body(exception.getMessage());
+        return new ResponseError(exception.getMessage(), exception.getStatus());
     }
 }

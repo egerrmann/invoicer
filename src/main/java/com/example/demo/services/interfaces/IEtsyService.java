@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface IEtsyService extends IEtsyConnect {
-    Mono<GetReceiptList> getReceipts();
+    Mono<GetReceiptList> getReceipts(Long startTimestamp, Long endTimestamp);
     Flux<EtsyLedger> getLedgers();
-    List<EtsyReceipt> getReceiptsList();
+    List<EtsyReceipt> getReceiptsList(String startDate, String endDate);
     String getShopIso();
 }

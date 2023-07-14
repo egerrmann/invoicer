@@ -8,6 +8,7 @@ import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
 import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetLedgerList;
 import com.example.demo.models.etsy.responses.GetReceiptList;
+import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.services.interfaces.IEtsyService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,8 +21,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 @Service
 public class EtsyService implements IEtsyService {
@@ -41,15 +46,18 @@ public class EtsyService implements IEtsyService {
     }
 
     @Override
-    public Mono<GetReceiptList> getReceipts() {
+    public Mono<GetReceiptList> getReceipts(Long startTimestamp,
+                                            Long endTimestamp) {
+
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("shops/{shopId}/receipts")
                         // these params will let us receive the needed receipts
 //                        .queryParam("limit", 50)
 //                        .queryParam("limit", 3)
-                        .queryParam("min_created", 1682899201)
-                        .queryParam("max_created", 1683244801)
+                        .queryParam("min_created", startTimestamp)
+                        .queryParam("max_created", endTimestamp)
+                        .queryParam("was_canceled", false)
                         .build(shop.getShopId()))
                 .exchangeToMono(response -> {
                     if (response.statusCode().equals(HttpStatus.OK))
@@ -64,8 +72,13 @@ public class EtsyService implements IEtsyService {
     }
 
     @Override
-    public List<EtsyReceipt> getReceiptsList() {
-        return getReceipts()
+    public List<EtsyReceipt> getReceiptsList(String startDate, String endDate) {
+        Long startTimestamp = DateService.dateToTimestampInSecs(startDate);
+
+        Long secsInOneDay = 60L * 60 * 24;
+        Long endTimestamp = DateService.dateToTimestampInSecs(endDate) + secsInOneDay;
+
+        return getReceipts(startTimestamp, endTimestamp)
                 .block()
                 .getResults();
     }
