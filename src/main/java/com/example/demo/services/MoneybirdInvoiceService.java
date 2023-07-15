@@ -22,9 +22,9 @@ import java.math.BigInteger;
 @AllArgsConstructor
 @Service
 public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
-    private WebClient webClientWithBaseUrl;
-    private SalesInvoiceWrapper wrappedInvoice;
-    private SalesInvoiceSenderWrapper wrappedInvoiceSending;
+    private final WebClient webClientWithBaseUrl;
+    private final SalesInvoiceWrapper wrappedInvoice;
+    private final SalesInvoiceSenderWrapper wrappedInvoiceSending;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -71,7 +71,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     public Mono<SalesInvoice> sendInvoice(String id) {
 
         wrappedInvoiceSending
-                .getSalesInvoiceSender()
+                .getSalesInvoiceSending()
                 .setDeliveryMethod("Manual");
 
         return webClientWithBaseUrl.patch()
@@ -98,6 +98,6 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SalesInvoiceSenderWrapper {
-        MoneybirdSalesInvoiceSender salesInvoiceSender;
+        MoneybirdSalesInvoiceSender salesInvoiceSending;
     }
 }
