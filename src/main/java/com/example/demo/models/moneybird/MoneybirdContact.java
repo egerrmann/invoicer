@@ -41,8 +41,8 @@ public class MoneybirdContact {
     private String sepaSequenceType;
     private String siIdentifierType;
     private String siIdentifier;
-    private Integer invoiceWorkflowId;
-    private Integer estimateWorkflowId;
+    private Long invoiceWorkflowId;
+    private Long estimateWorkflowId;
     private Boolean emailUbl;
     private Boolean directDebit;
     // some fields are not added

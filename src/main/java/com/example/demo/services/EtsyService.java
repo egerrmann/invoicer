@@ -3,12 +3,11 @@ package com.example.demo.services;
 import com.example.demo.models.etsy.EtsyLedger;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.models.etsy.EtsyShop;
+import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.oauth2.AccessTokenReceivedEvent;
 import com.example.demo.models.etsy.oauth2.EtsyOAuthProperties;
-import com.example.demo.models.etsy.EtsyUser;
 import com.example.demo.models.etsy.responses.GetLedgerList;
 import com.example.demo.models.etsy.responses.GetReceiptList;
-import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.services.interfaces.IEtsyService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +20,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class EtsyService implements IEtsyService {
@@ -46,41 +43,44 @@ public class EtsyService implements IEtsyService {
     }
 
     @Override
-    public Mono<GetReceiptList> getReceipts(Long startTimestamp,
-                                            Long endTimestamp) {
+    public List<EtsyReceipt> getReceipts(String startDate, String endDate) {
+        final long START_TIMESTAMP_INCL = DateService.dateToTimestampInSecs(startDate);
 
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("shops/{shopId}/receipts")
-                        // these params will let us receive the needed receipts
-//                        .queryParam("limit", 50)
-//                        .queryParam("limit", 3)
-                        .queryParam("min_created", startTimestamp)
-                        .queryParam("max_created", endTimestamp)
-                        .queryParam("was_canceled", false)
-                        .build(shop.getShopId()))
-                .exchangeToMono(response -> {
-                    if (response.statusCode().equals(HttpStatus.OK))
-                        return response.bodyToMono(GetReceiptList.class);
-//                            else if (response.statusCode().isError()) {
-//                                response.bodyToMono(String.class)
-//                                        .subscribe(System.out::println);
-//                                return null;
-//                            }
-                    else return response.createError();
-                });
-    }
+        // include the end date
+        final long END_TIMESTAMP_INCL = DateService.dateToTimestampInSecs(endDate)
+                + TimeUnit.DAYS.toSeconds(1);
 
-    @Override
-    public List<EtsyReceipt> getReceiptsList(String startDate, String endDate) {
-        Long startTimestamp = DateService.dateToTimestampInSecs(startDate);
+        List<EtsyReceipt> etsyReceipts = new ArrayList<>();
+        List<EtsyReceipt> result = new ArrayList<>();
+        int receiptsOffset = 0;
+        final int RECEIPTS_LIMIT_ON_PAGE = 100;
 
-        Long secsInOneDay = 60L * 60 * 24;
-        Long endTimestamp = DateService.dateToTimestampInSecs(endDate) + secsInOneDay;
+        do {
+            // variable must be effectively final here
+            int finalOffset = receiptsOffset;
+            result.addAll(etsyReceipts);
 
-        return getReceipts(startTimestamp, endTimestamp)
-                .block()
-                .getResults();
+            etsyReceipts = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("shops/{shopId}/receipts")
+                            .queryParam("min_created", START_TIMESTAMP_INCL)
+                            .queryParam("max_created", END_TIMESTAMP_INCL)
+                            .queryParam("limit", RECEIPTS_LIMIT_ON_PAGE)
+                            .queryParam("offset", finalOffset)
+                            .queryParam("sort_order", "asc")
+                            .build(shop.getShopId()))
+                    .exchangeToMono(response -> {
+                        if (response.statusCode().equals(HttpStatus.OK))
+                            return response.bodyToMono(GetReceiptList.class);
+                        else return response.createError();
+                    })
+                    .map(GetReceiptList::getResults)
+                    .block();
+
+            receiptsOffset += RECEIPTS_LIMIT_ON_PAGE;
+        } while (etsyReceipts != null && !etsyReceipts.isEmpty());
+
+        return result;
     }
 
     // TODO Delete if redundant

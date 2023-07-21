@@ -36,7 +36,7 @@ public class Contact {
     @Column(length = 50)
     private String lastName;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String address1;
 
     @Column(length = 50)

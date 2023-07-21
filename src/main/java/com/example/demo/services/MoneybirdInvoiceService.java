@@ -5,6 +5,8 @@ import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.IMoneybirdInvoiceService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,7 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
     private final WebClient webClientWithBaseUrl;
     private final SalesInvoiceWrapper wrappedInvoice;
     private final SalesInvoiceSenderWrapper wrappedInvoiceSending;
+    private final RateLimiter moneybirdRateLimiter;
 
     // TODO: move this method to the test class
     public SalesInvoice getTestInvoice() {
@@ -45,7 +48,8 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                     if (response.statusCode().equals(HttpStatus.OK))
                         return response.bodyToFlux(SalesInvoice.class);
                     else return response.createError().flux().cast(SalesInvoice.class);
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     @Override
@@ -59,7 +63,8 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                     if (response.statusCode() == HttpStatus.CREATED)
                         return response.bodyToMono(SalesInvoice.class);
                     else return response.createError();
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     @Override
@@ -76,7 +81,8 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                     if (response.statusCode() == HttpStatus.OK)
                         return response.bodyToMono(SalesInvoice.class);
                     else return response.createError();
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     @Component

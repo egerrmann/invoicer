@@ -35,7 +35,7 @@ public class InvoicerServiceTest {
 
     @BeforeAll
     public void init() {
-        taxRatesService = new MoneybirdTaxRatesService(null, etsyService);
+        taxRatesService = new MoneybirdTaxRatesService(null, etsyService, null);
     }
 
     @Test

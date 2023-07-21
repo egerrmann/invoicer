@@ -1,5 +1,7 @@
 package com.example.demo.configuration.moneybird;
 
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.time.Duration;
 
 @Configuration
 //@EnableWebSecurity
@@ -27,6 +31,18 @@ public class WebClientConfigMB {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
+    }
+
+    // moneybird has a throttling on their servers: 150 requests every 5 minutes
+    @Bean
+    public RateLimiter moneybirdRateLimiter() {
+        return RateLimiter.of("moneybird-rate-limiter",
+                RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofMinutes(5))
+                        .limitForPeriod(150)
+                        // max wait time for a request, if reached then error
+                        .timeoutDuration(Duration.ofMinutes(6))
+                        .build());
     }
 
 

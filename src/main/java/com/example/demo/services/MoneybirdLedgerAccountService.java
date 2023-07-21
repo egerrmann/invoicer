@@ -4,17 +4,15 @@ import com.example.demo.models.moneybird.MoneybirdLedgerAccount;
 import com.example.demo.services.interfaces.IMoneybirdLedgerAccountService;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +20,9 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
     // TODO Check if it works with final keyword after assigning a new webclient at a runtime
     private final WebClient webClientWithBaseUrl;
     private final LedgerWrapper wrappedLedger;
+    private final RateLimiter moneybirdRateLimiter;
 
+    // TODO Reduce the number of calls
     @Override
     public Flux<MoneybirdLedgerAccount> getAllLedgers() {
         return webClientWithBaseUrl.get()
@@ -34,7 +34,8 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
                         return response.createError()
                             .flux()
                             .cast(MoneybirdLedgerAccount.class);
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     /*@Override

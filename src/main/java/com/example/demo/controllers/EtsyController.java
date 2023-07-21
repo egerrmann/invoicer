@@ -26,7 +26,7 @@ public class EtsyController {
             @RequestParam(name = "start-date") String startDate,
             @RequestParam(name = "end-date") String endDate) {
 
-        List<EtsyReceipt> resp = authService.getReceiptsList(startDate, endDate);
+        List<EtsyReceipt> resp = authService.getReceipts(startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 

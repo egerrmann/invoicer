@@ -3,7 +3,6 @@ package com.example.demo.services;
 import com.example.demo.models.etsy.EtsyPrice;
 import com.example.demo.models.etsy.EtsyReceipt;
 import com.example.demo.models.etsy.EtsyTransaction;
-import com.example.demo.models.moneybird.MoneybirdContact;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.models.moneybird.SalesInvoice;
 import com.example.demo.services.interfaces.*;
@@ -28,18 +27,22 @@ public class InvoicerService implements IInvoicerService {
     @Override
     public List<SalesInvoice> createInvoices(String startDate, String endDate) {
         invoicerContactService.updateContactTable();
-        List<EtsyReceipt> receipts = etsyService.getReceiptsList(startDate, endDate);
+        List<EtsyReceipt> receipts = etsyService.getReceipts(startDate, endDate);
         return receiptsToInvoices(receipts);
     }
 
     private List<SalesInvoice> receiptsToInvoices(List<EtsyReceipt> receipts) {
+        int invoiceNumber = 0;
         List<SalesInvoice> invoices = new ArrayList<>();
         for (EtsyReceipt receipt : receipts) {
             SalesInvoice invoiceFromReceipt = receiptToInvoice(receipt, false);
             invoices.add(createAndSendInvoice(invoiceFromReceipt));
+            System.out.println(++invoiceNumber + ") " + invoiceFromReceipt.getInvoiceDate());
+
             if (!receipt.getRefunds().isEmpty()) {
                 invoiceFromReceipt = receiptToInvoice(receipt, true);
                 invoices.add(createAndSendInvoice(invoiceFromReceipt));
+                System.out.println(++invoiceNumber + ") " + invoiceFromReceipt.getInvoiceDate());
             }
         }
         return invoices;

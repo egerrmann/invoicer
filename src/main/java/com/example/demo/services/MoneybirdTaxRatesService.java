@@ -4,6 +4,8 @@ import com.example.demo.models.exceptions.IncorrectDataException;
 import com.example.demo.models.moneybird.MoneybirdTaxRate;
 import com.example.demo.services.interfaces.IEtsyService;
 import com.example.demo.services.interfaces.IMoneybirdTaxRatesService;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Flux;
 public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
     private final WebClient webClientWithBaseUrl;
     private final IEtsyService etsyService;
+    private final RateLimiter moneybirdRateLimiter;
 
     // TODO Add pagination
     @Override
@@ -29,7 +32,8 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
                         return response.createError()
                                 .flux()
                                 .cast(MoneybirdTaxRate.class);
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     // This method returns tax rates filtered by country
@@ -51,21 +55,24 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
                         return response.createError()
                                 .flux()
                                 .cast(MoneybirdTaxRate.class);
-                });
+                })
+                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
     }
 
     @Override
     public Flux<MoneybirdTaxRate> getDomesticTaxRates() {
         return getAllTaxRates()
                 .filter(rate -> rate.getCountry() == null
-                        && !rate.getName().contains("EU"));
+                        && rate.getTaxRateType().equals("sales_invoice")
+                        && rate.getName().contains("% btw"));
     }
 
     @Override
     public Flux<MoneybirdTaxRate> getOutsideEUTaxRates() {
         return getAllTaxRates()
                 .filter(rate -> rate.getCountry() == null
-                        && rate.getName().contains("EU"));
+                        && rate.getTaxRateType().equals("sales_invoice")
+                        && rate.getName().contains("buiten EU"));
     }
 
     // TODO we may consider getting TaxRates from MB only once

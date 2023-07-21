@@ -55,8 +55,7 @@ public class InvoicerContactService implements IInvoicerContactService {
 
     @Override
     public void updateContactTable() {
-        Iterable<MoneybirdContact> contactIterable =
-                contactService.getAllContacts().toIterable();
+        Iterable<MoneybirdContact> contactIterable = contactService.getAllContacts();
 
         for (MoneybirdContact moneybirdContact : contactIterable) {
             boolean isRecordAdded = !contactRepository

@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/moneybird")
 @RequiredArgsConstructor
@@ -52,13 +55,13 @@ public class MoneybirdController {
     }
 
     @GetMapping("/contacts")
-    public ResponseEntity<Flux<MoneybirdContact>> getAllContacts() {
+    public ResponseEntity<List<MoneybirdContact>> getAllContacts() {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(contactService.getAllContacts());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Flux.error(ex));
+                    .body(new ArrayList<>());
         }
     }
 
