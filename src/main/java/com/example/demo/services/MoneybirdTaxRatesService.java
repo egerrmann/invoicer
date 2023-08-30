@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+import java.util.stream.StreamSupport;
+
 // TODO Reduce number of API requests
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,11 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
                                 .flux()
                                 .cast(MoneybirdTaxRate.class);
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " get all tax rates");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     // This method returns tax rates filtered by country
@@ -56,7 +63,11 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
                                 .flux()
                                 .cast(MoneybirdTaxRate.class);
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " get all tax rates by country iso");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Override
@@ -91,25 +102,25 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
         // is the tax of the same country as MB account owner
         boolean isTaxDomestic = customerCountryIso.equals(shopIso);
 
-        Flux<MoneybirdTaxRate> taxRates;
+        List<MoneybirdTaxRate> taxRates;
 
         if (isTaxDomestic) {
-            taxRates = getDomesticTaxRates();
+            taxRates = getDomesticTaxRates().toStream().toList();
         }
         else if (customerCountryIso.equals("GB")
                 || customerCountryIso.equals("NO")) {
-            taxRates = getOutsideEUTaxRates();
+            taxRates = getOutsideEUTaxRates().toStream().toList();
         }
         else {
             // getting the taxRates for a specified country
-            taxRates = getAllTaxRates(customerCountryIso);
+            taxRates = getAllTaxRates(customerCountryIso).toStream().toList();
 
             // if there are no any tax rates for the specified country
-            if (!taxRates.toIterable().iterator().hasNext()) {
+            if (taxRates.isEmpty()) {
                 // This 'if' is invoked when the specified country is not added to MB tax rates table.
                 // Here we use "basic" tax rates for the home-country.
                 // By "basic" tax rates we mean the tax rates with no specified country.
-                taxRates = getDomesticTaxRates();
+                taxRates = getDomesticTaxRates().toStream().toList();
             }
         }
 
@@ -119,7 +130,7 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
     }
 
     // gets a max TaxRate from provided 'taxRates'
-    private MoneybirdTaxRate getMaxTaxRate(Flux<MoneybirdTaxRate> taxRates) {
+    private MoneybirdTaxRate getMaxTaxRate(List<MoneybirdTaxRate> taxRates) {
         /*double ratePercentage = 0;
         MoneybirdTaxRate maxRate = null;
 
@@ -131,7 +142,7 @@ public class MoneybirdTaxRatesService implements IMoneybirdTaxRatesService {
             }
         }
         return maxRate;*/
-        return taxRates.toStream()
+        return taxRates.stream()
                 .max((o1, o2) -> {
                     double o1Percentage = Double.parseDouble(o1.getPercentage());
                     double o2Percentage = Double.parseDouble(o2.getPercentage());

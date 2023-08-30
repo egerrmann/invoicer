@@ -90,6 +90,7 @@ public class InvoicerService implements IInvoicerService {
 
         String countryIso = receipt.getCountryIso();
         MoneybirdTaxRate taxRate = taxRatesService.getMaxCountryTax(countryIso);
+        // TODO Null returned if ledger acc doesn't exist
         String moneybirdLedgerId = ledgerAccountService.getLedgerId(countryIso);
 
         if (isWithRefund) {

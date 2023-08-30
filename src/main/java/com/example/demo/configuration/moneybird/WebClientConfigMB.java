@@ -33,7 +33,9 @@ public class WebClientConfigMB {
                 .build();
     }
 
-    // moneybird has a throttling on their servers: 150 requests every 5 minutes
+    // Moneybird has a throttling on their servers: 150 requests every 5 minutes.
+    // But due to some problems (from the Moneybird's side, I guess) limitRefreshPeriod
+    // was increased to 5 min 30 secs.
     @Bean
     public RateLimiter moneybirdRateLimiter() {
         return RateLimiter.of("moneybird-rate-limiter",

@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +80,12 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                         return response.bodyToFlux(MoneybirdContact.class);
                     else return response.createError().flux().cast(MoneybirdContact.class);
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + LocalDateTime.now().toString() + " get 100 contacts");
+                    MoneybirdApiCounter.inc();
+                });
+
     }
 
     @Override
@@ -92,7 +98,7 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                     }
                     else return response.createError();
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Override
@@ -132,7 +138,11 @@ public class MoneybirdContactService implements IMoneybirdContactService {
                     }
                     else return response.createError();
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " create contact");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Component

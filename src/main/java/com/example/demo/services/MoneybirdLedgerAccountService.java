@@ -35,7 +35,11 @@ public class MoneybirdLedgerAccountService implements IMoneybirdLedgerAccountSer
                             .flux()
                             .cast(MoneybirdLedgerAccount.class);
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " get all ledgers");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     /*@Override

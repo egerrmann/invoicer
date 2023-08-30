@@ -49,7 +49,11 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                         return response.bodyToFlux(SalesInvoice.class);
                     else return response.createError().flux().cast(SalesInvoice.class);
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " get all invoices");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Override
@@ -64,12 +68,15 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                         return response.bodyToMono(SalesInvoice.class);
                     else return response.createError();
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " create invoice");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Override
     public Mono<SalesInvoice> sendInvoice(String id) {
-
         wrappedInvoiceSending
                 .getSalesInvoiceSending()
                 .setDeliveryMethod("Manual");
@@ -82,7 +89,11 @@ public class MoneybirdInvoiceService implements IMoneybirdInvoiceService {
                         return response.bodyToMono(SalesInvoice.class);
                     else return response.createError();
                 })
-                .transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter));
+                .doOnSubscribe(subscription -> {
+                    System.out.println(MoneybirdApiCounter.counter + " send invoice ledgers");
+                    MoneybirdApiCounter.inc();
+                })
+                /*.transformDeferred(RateLimiterOperator.of(moneybirdRateLimiter))*/;
     }
 
     @Component
